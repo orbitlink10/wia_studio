@@ -1,0 +1,5 @@
+@source "../views";
+
+body {
+    text-rendering: optimizeLegibility;
+}

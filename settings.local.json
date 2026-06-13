@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "PowerShell(& 'C:\\xampp\\php\\php.exe' artisan *)",
+      "PowerShell(npm run build)",
+      "PowerShell(Invoke-WebRequest -Uri 'http://127.0.0.1:*' -UseBasicParsing)"
+    ]
+  }
+}

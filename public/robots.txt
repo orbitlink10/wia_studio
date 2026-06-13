@@ -1,0 +1,3 @@
+User-agent: *
+Disallow:
+Sitemap: https://planner.tiwi.co.ke/sitemap.xml
