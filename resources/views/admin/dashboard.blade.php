@@ -3,6 +3,37 @@
 @section('title', 'Admin | WIA Studio')
 
 @section('content')
+@php
+    $projectCategories = $projectCategories ?? [
+        'architecture' => 'Architecture',
+        'interiors' => 'Interiors',
+        'planning' => 'Planning',
+        'furniture' => 'Furniture',
+        'landscape' => 'Landscape',
+    ];
+
+    $categoryFromTypology = function (?string $typology) {
+        $typology = strtolower($typology ?? '');
+
+        if (str_contains($typology, 'interior')) return 'interiors';
+        if (str_contains($typology, 'planning') || str_contains($typology, 'master') || str_contains($typology, 'urban')) return 'planning';
+        if (str_contains($typology, 'furniture') || str_contains($typology, 'product') || str_contains($typology, 'lighting')) return 'furniture';
+        if (str_contains($typology, 'landscape') || str_contains($typology, 'garden') || str_contains($typology, 'terrace')) return 'landscape';
+
+        return 'architecture';
+    };
+
+    $typologyDetail = function (?string $typology) use ($projectCategories) {
+        $detail = trim((string) $typology);
+
+        foreach ($projectCategories as $label) {
+            $detail = preg_replace('/^'.preg_quote($label, '/').'\s*-\s*/i', '', $detail);
+            if (strcasecmp($detail, $label) === 0) return '';
+        }
+
+        return $detail;
+    };
+@endphp
 <section class="admin">
     <div class="admin-topbar">
         <div>
@@ -135,7 +166,18 @@
             <span>New project</span>
             <small>Manual company entry</small>
         </summary>
-        <form method="post" action="{{ route('admin.projects.store') }}">
+        <div class="admin-project-preview admin-empty-project-preview">
+            <div class="admin-project-preview-info">
+                <span class="pl-mark"><img src="/assets/img/wia-logo.svg" alt=""></span>
+                <h3>Project title</h3>
+                <p>Location</p>
+                <small>Selected section</small>
+            </div>
+            <figure class="admin-project-preview-image">
+                <span>Hero image preview</span>
+            </figure>
+        </div>
+        <form method="post" action="{{ route('admin.projects.store') }}" enctype="multipart/form-data">
             @csrf
             <div class="admin-form-grid">
                 <label>Title<input name="title" value="{{ old('title') }}" required></label>
@@ -143,11 +185,21 @@
                 <label>Location<input name="location" value="{{ old('location') }}" required></label>
                 <label>Year<input name="year" value="{{ old('year', date('Y')) }}" required></label>
                 <label>Client<input name="client" value="{{ old('client') }}" required></label>
-                <label>Typology<input name="typology" value="{{ old('typology') }}" placeholder="Architecture, Interiors, Landscape..." required></label>
+                <label>Belongs to
+                    <select name="category" required>
+                        @foreach ($projectCategories as $value => $label)
+                            <option value="{{ $value }}" @selected(old('category', 'architecture') === $value)>{{ $label }}</option>
+                        @endforeach
+                    </select>
+                </label>
+                <label>Type / room / product<input name="typology_detail" value="{{ old('typology_detail') }}" placeholder="Residential, sofa, campus..."></label>
                 <label>Size<input name="size" value="{{ old('size') }}" placeholder="m2 / ft2" required></label>
                 <label>Status<input name="status" value="{{ old('status') }}" placeholder="Completed, In design..." required></label>
             </div>
-            <label>Hero image URL<input name="hero_image" value="{{ old('hero_image') }}" placeholder="https://..." required></label>
+            <div class="admin-form-grid source-grid">
+                <label>Upload hero image<input type="file" name="hero_image_file" accept="image/*"></label>
+                <label>Or paste hero image URL<input name="hero_image" value="{{ old('hero_image') }}" placeholder="https://..."></label>
+            </div>
             <label>Summary<textarea name="summary" rows="4" required>{{ old('summary') }}</textarea></label>
             <label class="admin-check">
                 <input type="checkbox" name="featured" value="1" @checked(old('featured'))>
@@ -160,6 +212,10 @@
     <h2>Project properties</h2>
     <div class="admin-editor-list">
         @foreach ($projects as $project)
+            @php
+                $currentCategory = old('category', $categoryFromTypology($project->typology));
+                $currentTypologyDetail = old('typology_detail', $typologyDetail($project->typology));
+            @endphp
             <details class="admin-editor" @if ($loop->first) open @endif>
                 <summary>
                     <span>{{ $project->title }}</span>
@@ -172,11 +228,12 @@
                         <p>{{ $project->location }}</p>
                         <small>{{ $project->typology }}</small>
                     </div>
-                    <figure class="admin-project-preview-image">
+                    <a class="admin-project-preview-image" href="#add-plan-{{ $project->id }}" title="Add more photos and slides">
                         <img src="{{ $project->hero_image }}" alt="{{ $project->title }}">
-                    </figure>
+                        <span>Add photos / slides</span>
+                    </a>
                 </div>
-                <form method="post" action="{{ route('admin.projects.update', $project) }}">
+                <form method="post" action="{{ route('admin.projects.update', $project) }}" enctype="multipart/form-data">
                     @csrf
                     @method('PATCH')
                     <div class="admin-form-grid">
@@ -185,11 +242,21 @@
                         <label>Location<input name="location" value="{{ old('location', $project->location) }}" required></label>
                         <label>Year<input name="year" value="{{ old('year', $project->year) }}" required></label>
                         <label>Client<input name="client" value="{{ old('client', $project->client) }}" required></label>
-                        <label>Typology<input name="typology" value="{{ old('typology', $project->typology) }}" required></label>
+                        <label>Belongs to
+                            <select name="category" required>
+                                @foreach ($projectCategories as $value => $label)
+                                    <option value="{{ $value }}" @selected($currentCategory === $value)>{{ $label }}</option>
+                                @endforeach
+                            </select>
+                        </label>
+                        <label>Type / room / product<input name="typology_detail" value="{{ $currentTypologyDetail }}" placeholder="Residential, sofa, campus..."></label>
                         <label>Size<input name="size" value="{{ old('size', $project->size) }}" required></label>
                         <label>Status<input name="status" value="{{ old('status', $project->status) }}" required></label>
                     </div>
-                    <label>Hero image URL<input name="hero_image" value="{{ old('hero_image', $project->hero_image) }}" required></label>
+                    <div class="admin-form-grid source-grid">
+                        <label>Replace hero image<input type="file" name="hero_image_file" accept="image/*"></label>
+                        <label>Current hero image URL<input name="hero_image" value="{{ old('hero_image', $project->hero_image) }}"></label>
+                    </div>
                     <label>Summary<textarea name="summary" rows="4" required>{{ old('summary', $project->summary) }}</textarea></label>
                     <label class="admin-check">
                         <input type="checkbox" name="featured" value="1" @checked(old('featured', $project->featured))>
@@ -238,13 +305,14 @@
                             <span>Add new plan/detail</span>
                             <small>{{ $project->chapters->count() }} saved / {{ $clientSlideCount }} public slides</small>
                         </summary>
-                        <form method="post" action="{{ route('admin.project-chapters.store', $project) }}">
+                        <form method="post" action="{{ route('admin.project-chapters.store', $project) }}" enctype="multipart/form-data">
                             @csrf
                             <div class="admin-form-grid chapter-grid">
                                 <label>Order<input type="number" name="position" min="1" max="99" value="{{ old('position', $project->chapters->max('position') + 1 ?: 1) }}" required></label>
                                 <label>Title<input name="label" value="{{ old('label') }}" placeholder="Plan, courtyard, material study..." required></label>
-                                <label>Image URL<input name="image" value="{{ old('image') }}" placeholder="https://..." required></label>
+                                <label>Upload slide image<input type="file" name="image_file" accept="image/*"></label>
                             </div>
+                            <label>Or paste slide image URL<input name="image" value="{{ old('image') }}" placeholder="https://..."></label>
                             <label>Explanation<textarea name="body" rows="3" required>{{ old('body') }}</textarea></label>
                             <button type="submit">Add plan</button>
                         </form>
@@ -256,14 +324,15 @@
                                 <span>{{ str_pad($chapter->position, 2, '0', STR_PAD_LEFT) }} / {{ $chapter->label }}</span>
                                 <small>Editable client detail</small>
                             </summary>
-                            <form method="post" action="{{ route('admin.project-chapters.update', $chapter) }}">
+                            <form method="post" action="{{ route('admin.project-chapters.update', $chapter) }}" enctype="multipart/form-data">
                                 @csrf
                                 @method('PATCH')
                                 <div class="admin-form-grid chapter-grid">
                                     <label>Order<input type="number" name="position" min="1" max="99" value="{{ old('position', $chapter->position) }}" required></label>
                                     <label>Title<input name="label" value="{{ old('label', $chapter->label) }}" required></label>
-                                    <label>Image URL<input name="image" value="{{ old('image', $chapter->image) }}" required></label>
+                                    <label>Replace slide image<input type="file" name="image_file" accept="image/*"></label>
                                 </div>
+                                <label>Current slide image URL<input name="image" value="{{ old('image', $chapter->image) }}"></label>
                                 <label>Explanation<textarea name="body" rows="3" required>{{ old('body', $chapter->body) }}</textarea></label>
                                 <button type="submit">Save plan</button>
                             </form>

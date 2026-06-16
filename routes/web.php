@@ -13,6 +13,45 @@ use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 
+function wia_project_categories(): array
+{
+    return [
+        'architecture' => 'Architecture',
+        'interiors' => 'Interiors',
+        'planning' => 'Planning',
+        'furniture' => 'Furniture',
+        'landscape' => 'Landscape',
+    ];
+}
+
+function wia_project_typology(string $category, ?string $detail): string
+{
+    $label = wia_project_categories()[$category] ?? Str::title($category);
+    $detail = trim((string) $detail);
+
+    return $detail === '' ? $label : $label.' - '.$detail;
+}
+
+function wia_store_uploaded_image(Request $request, string $field): ?string
+{
+    if (! $request->hasFile($field)) {
+        return null;
+    }
+
+    $file = $request->file($field);
+    $directory = public_path('assets/uploads/projects');
+
+    if (! is_dir($directory)) {
+        mkdir($directory, 0755, true);
+    }
+
+    $name = Str::slug(pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME)) ?: 'image';
+    $filename = $name.'-'.Str::random(8).'.'.$file->getClientOriginalExtension();
+    $file->move($directory, $filename);
+
+    return '/assets/uploads/projects/'.$filename;
+}
+
 Route::get('/', function () {
     return view('projects.index', [
         'projects' => Project::with(['chapters' => fn ($query) => $query->orderBy('position'), 'credits'])->latest('year')->get(),
@@ -187,6 +226,7 @@ Route::get('/admin', function () {
         'services' => Service::orderBy('position')->get(),
         'studioProfile' => StudioProfile::current(),
         'inquiries' => Inquiry::latest()->limit(25)->get(),
+        'projectCategories' => wia_project_categories(),
     ]);
 })->middleware('auth')->name('admin.dashboard');
 
@@ -254,12 +294,23 @@ Route::post('/admin/projects', function (Request $request) {
         'location' => ['required', 'string', 'max:160'],
         'year' => ['required', 'string', 'max:40'],
         'client' => ['required', 'string', 'max:180'],
-        'typology' => ['required', 'string', 'max:120'],
+        'category' => ['required', Rule::in(array_keys(wia_project_categories()))],
+        'typology_detail' => ['nullable', 'string', 'max:120'],
         'size' => ['required', 'string', 'max:120'],
         'status' => ['required', 'string', 'max:120'],
-        'hero_image' => ['required', 'string', 'max:500'],
+        'hero_image' => ['nullable', 'string', 'max:500'],
+        'hero_image_file' => ['nullable', 'image', 'max:8192'],
         'summary' => ['required', 'string', 'max:4000'],
     ]);
+
+    $uploadedHero = wia_store_uploaded_image($request, 'hero_image_file');
+    if ($uploadedHero) {
+        $validated['hero_image'] = $uploadedHero;
+    }
+
+    if (empty($validated['hero_image'])) {
+        return back()->withErrors(['hero_image' => 'Please upload a hero image or paste a hero image URL.'])->withInput();
+    }
 
     $baseSlug = Str::slug($validated['slug'] ?: $validated['title']);
     $slug = $baseSlug;
@@ -271,7 +322,9 @@ Route::post('/admin/projects', function (Request $request) {
     }
 
     $validated['slug'] = $slug;
+    $validated['typology'] = wia_project_typology($validated['category'], $validated['typology_detail'] ?? null);
     $validated['featured'] = $request->boolean('featured');
+    unset($validated['category'], $validated['typology_detail'], $validated['hero_image_file']);
 
     Project::create($validated);
 
@@ -285,15 +338,28 @@ Route::patch('/admin/projects/{project}', function (Request $request, Project $p
         'location' => ['required', 'string', 'max:160'],
         'year' => ['required', 'string', 'max:40'],
         'client' => ['required', 'string', 'max:180'],
-        'typology' => ['required', 'string', 'max:120'],
+        'category' => ['required', Rule::in(array_keys(wia_project_categories()))],
+        'typology_detail' => ['nullable', 'string', 'max:120'],
         'size' => ['required', 'string', 'max:120'],
         'status' => ['required', 'string', 'max:120'],
-        'hero_image' => ['required', 'string', 'max:500'],
+        'hero_image' => ['nullable', 'string', 'max:500'],
+        'hero_image_file' => ['nullable', 'image', 'max:8192'],
         'summary' => ['required', 'string', 'max:4000'],
     ]);
 
+    $uploadedHero = wia_store_uploaded_image($request, 'hero_image_file');
+    if ($uploadedHero) {
+        $validated['hero_image'] = $uploadedHero;
+    }
+
+    if (empty($validated['hero_image'])) {
+        return back()->withErrors(['hero_image' => 'Please upload a hero image or keep the current hero image URL.'])->withInput();
+    }
+
     $validated['slug'] = $validated['slug'] ?: Str::slug($validated['title']);
+    $validated['typology'] = wia_project_typology($validated['category'], $validated['typology_detail'] ?? null);
     $validated['featured'] = $request->boolean('featured');
+    unset($validated['category'], $validated['typology_detail'], $validated['hero_image_file']);
 
     $project->update($validated);
 
@@ -304,9 +370,21 @@ Route::post('/admin/projects/{project}/chapters', function (Request $request, Pr
     $validated = $request->validate([
         'position' => ['required', 'integer', 'min:1', 'max:99'],
         'label' => ['required', 'string', 'max:140'],
-        'image' => ['required', 'string', 'max:500'],
+        'image' => ['nullable', 'string', 'max:500'],
+        'image_file' => ['nullable', 'image', 'max:8192'],
         'body' => ['required', 'string', 'max:4000'],
     ]);
+
+    $uploadedImage = wia_store_uploaded_image($request, 'image_file');
+    if ($uploadedImage) {
+        $validated['image'] = $uploadedImage;
+    }
+
+    if (empty($validated['image'])) {
+        return back()->withErrors(['image' => 'Please upload a slide image or paste a slide image URL.'])->withInput();
+    }
+
+    unset($validated['image_file']);
 
     $project->chapters()->create($validated);
 
@@ -317,9 +395,21 @@ Route::patch('/admin/project-chapters/{chapter}', function (Request $request, Pr
     $validated = $request->validate([
         'position' => ['required', 'integer', 'min:1', 'max:99'],
         'label' => ['required', 'string', 'max:140'],
-        'image' => ['required', 'string', 'max:500'],
+        'image' => ['nullable', 'string', 'max:500'],
+        'image_file' => ['nullable', 'image', 'max:8192'],
         'body' => ['required', 'string', 'max:4000'],
     ]);
+
+    $uploadedImage = wia_store_uploaded_image($request, 'image_file');
+    if ($uploadedImage) {
+        $validated['image'] = $uploadedImage;
+    }
+
+    if (empty($validated['image'])) {
+        return back()->withErrors(['image' => 'Please upload a slide image or keep the current slide image URL.'])->withInput();
+    }
+
+    unset($validated['image_file']);
 
     $chapter->update($validated);
 
