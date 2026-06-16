@@ -22,6 +22,56 @@ class DatabaseSeeder extends Seeder
 
         $projects = [
             [
+                'slug' => 'yellow-house',
+                'title' => 'Yellow House',
+                'location' => 'Mutito Andei, Kenya',
+                'year' => '2026',
+                'client' => 'Hekima Farm',
+                'typology' => 'Architecture',
+                'size' => 'One-bedroom VIP retreat',
+                'status' => 'Completed',
+                'hero_image' => '/assets/img/yellow-house-01.jpg',
+                'summary' => 'Standing as the first imprint of Hekima Farm\'s vision, Yellow House is more than just a structure. It is a statement of intent: a one-bedroom VIP retreat that balances intimacy with openness, tradition with modernity, and nature with comfort.',
+                'featured' => true,
+                'chapters' => [
+                    [
+                        'position' => 1,
+                        'label' => 'A Warm Retreat',
+                        'body' => 'Designed as a sanctuary for rest and reconnection, Yellow House invites families to unwind and experience the gentle rhythm of Mutito Andei\'s landscape. It is the architectural embodiment of a warm embrace.',
+                        'image' => '/assets/img/yellow-house-02.jpg',
+                    ],
+                    [
+                        'position' => 2,
+                        'label' => 'Spatial Fluidity',
+                        'body' => 'At its core, the chalet is a masterclass in spatial fluidity. The open-plan layout seamlessly integrates the lounge, kitchen, and utility room, fostering a quiet sense of connectedness between functions.',
+                        'image' => '/assets/img/yellow-house-03.jpg',
+                    ],
+                    [
+                        'position' => 3,
+                        'label' => 'Life Under The Eaves',
+                        'body' => 'Two expansive eaves extend the living space beyond its walls, blurring the boundary between indoors and outdoors. These shaded outdoor rooms hold sunrise, midday heat, breeze, and gathering with equal ease.',
+                        'image' => '/assets/img/yellow-house-04.jpg',
+                    ],
+                    [
+                        'position' => 4,
+                        'label' => 'Light And Landscape',
+                        'body' => 'Whether bathed in golden morning light or protected from the harsh midday sun, the house creates a dynamic interplay of light, shadow, and air, allowing residents to fully immerse themselves in the land’s tranquility.',
+                        'image' => '/assets/img/yellow-house-05.jpg',
+                    ],
+                    [
+                        'position' => 5,
+                        'label' => 'Material Honesty',
+                        'body' => 'The exterior is built from precisely cut machine stone and finished with Ruff and Tuff, giving it a textured resilience that speaks to endurance and craft. Inside, skimmed walls and double-layered paint create a refined, velvety contrast to the rugged shell.',
+                        'image' => '/assets/img/yellow-house-06.jpg',
+                    ],
+                ],
+                'credits' => [
+                    ['role' => 'Design Lead', 'name' => 'WIA Studio'],
+                    ['role' => 'Client', 'name' => 'Hekima Farm'],
+                    ['role' => 'Project Type', 'name' => 'VIP Retreat / Chalet'],
+                ],
+            ],
+            [
                 'slug' => 'karura-courtyard-house',
                 'title' => 'Karura Courtyard House',
                 'location' => 'Nairobi, Kenya',

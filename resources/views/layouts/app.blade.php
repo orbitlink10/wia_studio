@@ -5,9 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>@yield('title', 'WIA Studio')</title>
     <meta name="description" content="WIA Studio is a Nairobi-based architecture, interior design, and construction documentation practice.">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;500&family=Overpass:wght@300;400;500;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="{{ asset('assets/css/app.css') }}?v={{ filemtime(public_path('assets/css/app.css')) }}">
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
@@ -39,6 +36,7 @@
             <a href="{{ route('projects.index') }}" data-category-trigger="interiors" data-wia-filter-nav="interiors">Interiors</a>
             <a href="{{ route('projects.index') }}" data-category-trigger="landscape" data-wia-filter-nav="landscape">Landscape</a>
             <a href="{{ route('projects.index') }}" data-category-trigger="planning" data-wia-filter-nav="planning">Planning</a>
+            <a href="{{ route('projects.index') }}" data-category-trigger="products" data-wia-filter-nav="products">Furniture</a>
             @auth
                 <a class="admin-nav-access" href="{{ route('admin.dashboard') }}">Admin</a>
             @else

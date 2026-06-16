@@ -202,6 +202,70 @@ const readDetailChapters = (row) => {
     }
 };
 
+const escapeHtml = (value = "") => String(value)
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#039;");
+
+const optimizedImage = (url = "", width = 1400) => {
+    if (!url || !url.includes("images.unsplash.com")) return url;
+    const joiner = url.includes("?") ? "&" : "?";
+    return `${url}${joiner}auto=format&fit=crop&w=${width}&q=78`;
+};
+
+const buildInlineSlides = (row, images, chapters) => {
+    const title = row.dataset.title || "Project";
+    const hero = images[0] || row.querySelector(".pl-img img")?.src || "";
+    const summary = row.dataset.summary || "A WIA Studio project reference with planning, material, and delivery notes.";
+    const chapterSlides = chapters.slice(0, 5);
+
+    if (!chapterSlides.length) {
+        chapterSlides.push({
+            label: "Design Intent",
+            body: summary,
+            image: hero,
+        });
+    }
+
+    const slides = [
+        { type: "hero", label: title, body: row.dataset.location || "", image: hero },
+        { type: "copy", label: "Overview", body: summary, image: hero },
+        { type: "facts", label: "Project Facts", body: summary, image: hero },
+        ...chapterSlides.map((chapter) => ({
+            type: "story",
+            label: chapter.label || "Project Detail",
+            body: chapter.body || summary,
+            image: chapter.image || hero,
+        })),
+    ];
+
+    const supportImages = [chapters[0]?.image, chapters[1]?.image, chapters[2]?.image, hero].filter(Boolean);
+    slides.push(
+        {
+            type: "copy",
+            label: "Spatial Strategy",
+            body: "A consistent slide sequence keeps the project easy to scan, share, and review across devices.",
+            image: supportImages[0] || hero,
+        },
+        {
+            type: "story",
+            label: "Material And Atmosphere",
+            body: "Media is lazy loaded and sized for the deck so the presentation remains quick without losing the studio tone.",
+            image: supportImages[1] || hero,
+        },
+        {
+            type: "copy",
+            label: "Delivery Notes",
+            body: `${row.dataset.status || "Project"} / ${row.dataset.size || ""} / ${row.dataset.typology || ""}`,
+            image: supportImages[2] || hero,
+        },
+    );
+
+    return slides.slice(0, 10);
+};
+
 const openInlineProject = (row) => {
     if (activeProjectDetail?.trigger === row) {
         activeProjectDetail.panel.remove();
@@ -218,52 +282,74 @@ const openInlineProject = (row) => {
     const images = readDetailImages(row);
     const chapters = readDetailChapters(row);
     const title = row.dataset.title || "Project";
-    const hero = images[0] || row.querySelector(".pl-img img")?.src || "";
-    const detailPanels = chapters.length
-        ? chapters
-        : images.slice(1).map((image, index) => ({
-            label: `Detail ${index + 1}`,
-            body: row.dataset.summary || "A WIA Studio project reference with planning, material, and delivery notes.",
-            image,
-        }));
+    const slides = buildInlineSlides(row, images, chapters);
+    const projectUrl = row.dataset.projectUrl || row.href || "#";
     const panel = document.createElement("article");
     panel.className = "pl-detail";
     panel.innerHTML = `
         <div class="pl-detail-main" data-inline-track tabindex="0" aria-label="${title} details">
-            <section class="pl-detail-panel pl-detail-panel-hero">
-                <aside class="pl-detail-side">
-                    <span class="pl-mark"><img src="/assets/img/wia-logo.svg" alt=""></span>
-                    <h2>${title}</h2>
-                    <p>${row.dataset.location || ""}</p>
-                    <dl>
-                        <dt>Client</dt><dd>${row.dataset.client || "WIA Studio"}</dd>
-                        <dt>Typology</dt><dd>${row.dataset.typology || ""}</dd>
-                        <dt>Size m2/ft2</dt><dd>${row.dataset.size || ""}</dd>
-                        <dt>Status</dt><dd>${row.dataset.status || ""}</dd>
-                    </dl>
-                    <div class="pl-detail-actions">
-                        <span>Share</span>
-                    </div>
-                </aside>
-                <figure class="pl-detail-hero">
-                    <img src="${hero}" alt="${title}">
-                </figure>
-                <article class="pl-detail-copy">
-                    <span>Overview</span>
-                    <p>${row.dataset.summary || "A WIA Studio project reference with planning, material, and delivery notes."}</p>
-                </article>
-            </section>
-            ${detailPanels.map((item, index) => `
-                <section class="pl-detail-panel pl-detail-story">
-                    <article>
-                        <span>${item.label || `Detail ${index + 1}`}</span>
-                        <p>${item.body || row.dataset.summary || ""}</p>
-                    </article>
-                    <figure class="pl-detail-image">
-                        <img src="${item.image || hero}" alt="${title} ${item.label || "detail"}">
-                    </figure>
-                </section>
-            `).join("")}
+            ${slides.map((item, index) => {
+                const eyebrow = item.label || "Project";
+                if (index === 0) {
+                    return `
+                        <section class="pl-detail-panel pl-detail-panel-hero">
+                            <aside class="pl-detail-side">
+                                <span class="pl-mark"><img src="/assets/img/wia-logo.svg" alt=""></span>
+                                <h2>${escapeHtml(title)}</h2>
+                                <p>${escapeHtml(row.dataset.location || "")}</p>
+                                <dl>
+                                    <dt>Client</dt><dd>${escapeHtml(row.dataset.client || "WIA Studio")}</dd>
+                                    <dt>Typology</dt><dd>${escapeHtml(row.dataset.typology || "")}</dd>
+                                    <dt>Size m2/ft2</dt><dd>${escapeHtml(row.dataset.size || "")}</dd>
+                                    <dt>Status</dt><dd>${escapeHtml(row.dataset.status || "")}</dd>
+                                </dl>
+                                <div class="pl-detail-actions">
+                                    <span>Share</span>
+                                    <a href="${escapeHtml(projectUrl)}">Open page</a>
+                                    <button type="button" data-inline-copy="${escapeHtml(projectUrl)}">Copy link</button>
+                                </div>
+                            </aside>
+                            <figure class="pl-detail-hero">
+                                <img src="${escapeHtml(optimizedImage(item.image, 1500))}" alt="${escapeHtml(title)}" loading="lazy" decoding="async">
+                            </figure>
+                            <article class="pl-detail-copy">
+                                <span>${eyebrow}</span>
+                                <p>${escapeHtml(row.dataset.summary || item.body)}</p>
+                            </article>
+                        </section>`;
+                }
+
+                if (item.type === "facts") {
+                    return `
+                        <section class="pl-detail-panel pl-detail-story">
+                            <article>
+                                <span>${eyebrow}</span>
+                                <p>${escapeHtml(item.label)}</p>
+                            </article>
+                            <article class="pl-detail-copy">
+                                <dl class="project-facts-slide">
+                                    <dt>Client</dt><dd>${escapeHtml(row.dataset.client || "WIA Studio")}</dd>
+                                    <dt>Typology</dt><dd>${escapeHtml(row.dataset.typology || "")}</dd>
+                                    <dt>Size</dt><dd>${escapeHtml(row.dataset.size || "")}</dd>
+                                    <dt>Status</dt><dd>${escapeHtml(row.dataset.status || "")}</dd>
+                                    <dt>URL</dt><dd>${escapeHtml(projectUrl)}</dd>
+                                </dl>
+                            </article>
+                        </section>`;
+                }
+
+                return `
+                    <section class="pl-detail-panel pl-detail-story">
+                        <article>
+                            <span>${eyebrow}</span>
+                            <p>${escapeHtml(item.label)}</p>
+                            <p>${escapeHtml(item.body || "")}</p>
+                        </article>
+                        <figure class="pl-detail-image">
+                            <img src="${escapeHtml(optimizedImage(item.image, 1300))}" alt="${escapeHtml(`${title} ${item.label}`)}" loading="lazy" decoding="async">
+                        </figure>
+                    </section>`;
+            }).join("")}
         </div>
         <div class="pl-detail-progress" aria-hidden="true"><span data-inline-progress></span></div>
     `;
@@ -273,6 +359,11 @@ const openInlineProject = (row) => {
     activeProjectDetail = { trigger: row, panel };
     const track = panel.querySelector("[data-inline-track]");
     const progress = panel.querySelector("[data-inline-progress]");
+    panel.querySelector("[data-inline-copy]")?.addEventListener("click", async (event) => {
+        const button = event.currentTarget;
+        await navigator.clipboard.writeText(button.dataset.inlineCopy);
+        button.textContent = "Copied";
+    });
     const updateInlineProgress = () => {
         if (!track || !progress) return;
         const max = Math.max(1, track.scrollWidth - track.clientWidth);
@@ -329,6 +420,61 @@ document.querySelector("[data-share]")?.addEventListener("click", async () => {
 
 document.querySelector("[data-print]")?.addEventListener("click", () => {
     window.print();
+});
+
+document.querySelectorAll("[data-project-slide-track]").forEach((track) => {
+    const slides = [...track.querySelectorAll(".project-slide")];
+    const progress = document.querySelector("[data-project-slide-progress]");
+    const previous = document.querySelector("[data-slide-prev]");
+    const next = document.querySelector("[data-slide-next]");
+
+    if (!slides.length) return;
+
+    const setActiveSlide = () => {
+        const center = track.scrollLeft + track.clientWidth / 2;
+        let activeIndex = 0;
+        let activeDistance = Number.POSITIVE_INFINITY;
+
+        slides.forEach((slide, index) => {
+            const slideCenter = slide.offsetLeft + slide.offsetWidth / 2;
+            const distance = Math.abs(center - slideCenter);
+            if (distance < activeDistance) {
+                activeIndex = index;
+                activeDistance = distance;
+            }
+        });
+
+        slides.forEach((slide, index) => slide.classList.toggle("is-active", index === activeIndex));
+        const max = Math.max(1, track.scrollWidth - track.clientWidth);
+        if (progress) progress.style.width = `${Math.min(100, (track.scrollLeft / max) * 100)}%`;
+    };
+
+    const scrollBySlide = (direction) => {
+        const activeIndex = slides.findIndex((slide) => slide.classList.contains("is-active"));
+        const nextIndex = Math.max(0, Math.min(slides.length - 1, activeIndex + direction));
+        slides[nextIndex]?.scrollIntoView({ behavior: "smooth", block: "nearest", inline: "start" });
+    };
+
+    track.addEventListener("scroll", () => requestAnimationFrame(setActiveSlide));
+    track.addEventListener("wheel", (event) => {
+        if (window.innerWidth <= 920 || Math.abs(event.deltaX) > Math.abs(event.deltaY)) return;
+
+        const movingRight = event.deltaY > 0;
+        const movingLeft = event.deltaY < 0;
+        const maxScroll = track.scrollWidth - track.clientWidth - 2;
+        const canMoveRight = movingRight && track.scrollLeft < maxScroll;
+        const canMoveLeft = movingLeft && track.scrollLeft > 2;
+
+        if (!canMoveRight && !canMoveLeft) return;
+
+        event.preventDefault();
+        track.scrollLeft += event.deltaY;
+    }, { passive: false });
+
+    previous?.addEventListener("click", () => scrollBySlide(-1));
+    next?.addEventListener("click", () => scrollBySlide(1));
+
+    setActiveSlide();
 });
 
 const galleryDialog = document.getElementById("galleryDialog");

@@ -31,9 +31,10 @@
             <a href="{{ route('home') }}#services">Approvals</a>
         </div>
         <div data-panel="products">
-            <h2>+Products</h2>
-            <a href="{{ asset('assets/img/wia-logo.svg') }}" download>Download logo SVG</a>
-            <a href="{{ route('home') }}#identity">Brand system</a>
+            <h2>+Furniture</h2>
+            <a href="{{ route('projects.index') }}">Furniture</a>
+            <a href="{{ route('projects.index') }}">Lighting</a>
+            <a href="{{ route('projects.index') }}">Objects</a>
         </div>
     </div>
 

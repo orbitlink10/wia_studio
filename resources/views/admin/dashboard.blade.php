@@ -198,9 +198,12 @@
                     <button type="submit">Save project</button>
                 </form>
                 <div class="admin-chapter-manager">
+                    @php
+                        $clientSlideCount = min(10, 3 + max(1, min($project->chapters->count(), 5)));
+                    @endphp
                     <div class="admin-chapter-head">
                         <h3>Project plans and details</h3>
-                        <p>Add the extra image panels and explanations that clients see when they open this project.</p>
+                        <p>Each shareable project page is generated as an {{ $clientSlideCount }}-slide deck. Add up to 5 strong detail entries to keep the public presentation between 8 and 10 slides.</p>
                     </div>
 
                     <div class="admin-slide-strip" aria-label="{{ $project->title }} horizontal client slides">
@@ -233,7 +236,7 @@
                     <details class="admin-sub-editor" id="add-plan-{{ $project->id }}" open>
                         <summary>
                             <span>Add new plan/detail</span>
-                            <small>{{ $project->chapters->count() }} saved</small>
+                            <small>{{ $project->chapters->count() }} saved / {{ $clientSlideCount }} public slides</small>
                         </summary>
                         <form method="post" action="{{ route('admin.project-chapters.store', $project) }}">
                             @csrf

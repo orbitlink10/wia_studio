@@ -52,7 +52,7 @@
 
         <a
             class="pl-row"
-            href="#projects"
+            href="{{ route('projects.show', $project) }}"
             data-pl-expand
             data-project-url="{{ route('projects.show', $project) }}"
             data-category="{{ $category }}"
