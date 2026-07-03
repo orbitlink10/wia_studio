@@ -91,6 +91,17 @@ const projectFilterClear = document.querySelector("[data-wia-filter-clear]");
 const projectSubnav = document.getElementById("subnav");
 const projectEmpty = document.getElementById("plEmpty");
 let activeProjectDetail = null;
+let savedScrollY = 0;
+
+const lockPageScroll = () => {
+    savedScrollY = window.scrollY;
+    document.body.classList.add("pl-detail-active");
+};
+
+const unlockPageScroll = () => {
+    document.body.classList.remove("pl-detail-active");
+    window.scrollTo({ top: savedScrollY, behavior: "instant" });
+};
 
 const projectSubcategoriesFor = (category) => {
     const labels = new Map();
@@ -110,9 +121,7 @@ const applyProjectFilter = (category = "all", subcategory = "all", scroll = true
     if (!projectRows.length) return;
 
     if (activeProjectDetail) {
-        activeProjectDetail.trigger.classList.remove("is-expanded");
-        activeProjectDetail.panel.remove();
-        activeProjectDetail = null;
+        closeInlineProject(null, { animate: false });
     }
 
     let visibleCount = 0;
@@ -266,17 +275,146 @@ const buildInlineSlides = (row, images, chapters) => {
     return slides.slice(0, 10);
 };
 
+const getHeaderOffset = () => document.getElementById("siteHeader")?.offsetHeight || 72;
+
+const scrollToElement = (element, behavior = "smooth") => {
+    const rect = element.getBoundingClientRect();
+    const viewportHeight = window.innerHeight;
+    const elementHeight = rect.height;
+    const top = element.getBoundingClientRect().top + window.scrollY
+        - Math.max(getHeaderOffset(), (viewportHeight - elementHeight) / 2);
+
+    window.scrollTo({ top: Math.max(0, top), behavior });
+};
+
+const unbindExpandedScrollHandlers = () => {
+    document.removeEventListener("wheel", onExpandedWheel);
+    document.removeEventListener("touchstart", onExpandedTouchStart);
+    document.removeEventListener("touchmove", onExpandedTouchMove);
+};
+
+let expandedTouchStartY = 0;
+
+const onExpandedTouchStart = (event) => {
+    expandedTouchStartY = event.touches[0]?.clientY ?? 0;
+};
+
+const onExpandedTouchMove = (event) => {
+    if (!activeProjectDetail) return;
+
+    const touchY = event.touches[0]?.clientY ?? expandedTouchStartY;
+    const deltaY = expandedTouchStartY - touchY;
+
+    if (deltaY <= 8) return;
+
+    const { panel } = activeProjectDetail;
+    const track = panel.querySelector("[data-inline-track]");
+    const maxScroll = track ? track.scrollWidth - track.clientWidth - 2 : 0;
+
+    if (track && track.scrollLeft < maxScroll - 2 && track.scrollLeft > 2) return;
+
+    event.preventDefault();
+    closeInlineProject(() => {
+        window.scrollBy({ top: deltaY, behavior: "auto" });
+    });
+};
+
+const onExpandedWheel = (event) => {
+    if (!activeProjectDetail) return;
+
+    const { panel } = activeProjectDetail;
+    const track = panel.querySelector("[data-inline-track]");
+    const updateProgress = activeProjectDetail.updateProgress;
+
+    if (Math.abs(event.deltaX) > Math.abs(event.deltaY)) {
+        if (!track) return;
+        event.preventDefault();
+        track.scrollLeft += event.deltaX;
+        updateProgress?.();
+        return;
+    }
+
+    if (event.deltaY < 0) {
+        if (track && track.scrollLeft > 2) {
+            event.preventDefault();
+            track.scrollLeft += event.deltaY;
+            updateProgress?.();
+        }
+        return;
+    }
+
+    if (event.deltaY > 0) {
+        const maxScroll = track ? track.scrollWidth - track.clientWidth - 2 : 0;
+        const inTrack = track?.contains(event.target);
+
+        if (inTrack && track.scrollLeft < maxScroll - 2 && track.scrollLeft > 2) {
+            event.preventDefault();
+            track.scrollLeft += event.deltaY;
+            updateProgress?.();
+            return;
+        }
+
+        event.preventDefault();
+        const delta = event.deltaY;
+        closeInlineProject(() => {
+            window.scrollBy({ top: delta, behavior: "auto" });
+        });
+    }
+};
+
+const bindExpandedScrollHandlers = () => {
+    document.addEventListener("wheel", onExpandedWheel, { passive: false });
+    document.addEventListener("touchstart", onExpandedTouchStart, { passive: true });
+    document.addEventListener("touchmove", onExpandedTouchMove, { passive: false });
+};
+
+const closeInlineProject = (onClosed, { animate = true } = {}) => {
+    if (!activeProjectDetail) {
+        onClosed?.();
+        return;
+    }
+
+    const { trigger, panel } = activeProjectDetail;
+    activeProjectDetail = null;
+    unbindExpandedScrollHandlers();
+    trigger.classList.remove("is-expanded");
+
+    if (!animate) {
+        panel.remove();
+        unlockPageScroll();
+        onClosed?.();
+        return;
+    }
+
+    panel.classList.remove("is-open");
+    panel.classList.add("is-closing");
+
+    let finished = false;
+    const finish = () => {
+        if (finished) return;
+        finished = true;
+        panel.remove();
+        unlockPageScroll();
+        onClosed?.();
+    };
+
+    panel.addEventListener("transitionend", (event) => {
+        if (event.propertyName === "clip-path" || event.propertyName === "transform") {
+            finish();
+        }
+    }, { once: true });
+
+    window.setTimeout(finish, 780);
+};
+
 const openInlineProject = (row) => {
     if (activeProjectDetail?.trigger === row) {
-        activeProjectDetail.panel.remove();
-        row.classList.remove("is-expanded");
-        activeProjectDetail = null;
+        closeInlineProject();
         return;
     }
 
     if (activeProjectDetail) {
-        activeProjectDetail.trigger.classList.remove("is-expanded");
-        activeProjectDetail.panel.remove();
+        closeInlineProject(null, { animate: false });
     }
 
     const images = readDetailImages(row);
@@ -354,46 +492,34 @@ const openInlineProject = (row) => {
         <div class="pl-detail-progress" aria-hidden="true"><span data-inline-progress></span></div>
     `;
 
-    row.insertAdjacentElement("afterend", panel);
     row.classList.add("is-expanded");
-    activeProjectDetail = { trigger: row, panel };
+    document.body.appendChild(panel);
+    lockPageScroll();
+
     const track = panel.querySelector("[data-inline-track]");
     const progress = panel.querySelector("[data-inline-progress]");
-    panel.querySelector("[data-inline-copy]")?.addEventListener("click", async (event) => {
-        const button = event.currentTarget;
-        await navigator.clipboard.writeText(button.dataset.inlineCopy);
-        button.textContent = "Copied";
-    });
     const updateInlineProgress = () => {
         if (!track || !progress) return;
         const max = Math.max(1, track.scrollWidth - track.clientWidth);
         progress.style.width = `${Math.min(100, (track.scrollLeft / max) * 100)}%`;
     };
-    track?.addEventListener("scroll", updateInlineProgress);
-    track?.addEventListener("wheel", (event) => {
-        if (window.innerWidth <= 700 || Math.abs(event.deltaX) > Math.abs(event.deltaY)) return;
 
-        const movingRight = event.deltaY > 0;
-        const movingLeft = event.deltaY < 0;
-        const maxScroll = track.scrollWidth - track.clientWidth - 2;
-        const canMoveRight = movingRight && track.scrollLeft < maxScroll;
-        const canMoveLeft = movingLeft && track.scrollLeft > 2;
+    activeProjectDetail = { trigger: row, panel, updateProgress: updateInlineProgress };
 
-        if (!canMoveRight && !canMoveLeft) return;
-
-        event.preventDefault();
-        track.scrollLeft += event.deltaY;
-        updateInlineProgress();
-    }, { passive: false });
-    requestAnimationFrame(() => {
-        panel.classList.add("is-open");
-        updateInlineProgress();
-
-        const rect = panel.getBoundingClientRect();
-        if (rect.top < 0 || rect.top > window.innerHeight * 0.35) {
-            panel.scrollIntoView({ behavior: "smooth", block: "start" });
-        }
+    panel.querySelector("[data-inline-copy]")?.addEventListener("click", async (event) => {
+        const button = event.currentTarget;
+        await navigator.clipboard.writeText(button.dataset.inlineCopy);
+        button.textContent = "Copied";
     });
+    track?.addEventListener("scroll", updateInlineProgress);
+
+    window.setTimeout(() => {
+        requestAnimationFrame(() => {
+            panel.classList.add("is-open");
+            updateInlineProgress();
+            bindExpandedScrollHandlers();
+        });
+    }, 80);
 };
 
 document.querySelectorAll("[data-pl-expand]").forEach((row) => {
