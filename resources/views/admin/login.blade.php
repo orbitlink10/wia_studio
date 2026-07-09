@@ -5,7 +5,7 @@
 @section('content')
 <section class="admin admin-login">
     <p class="eyebrow">Backend</p>
-    <h1>Admin login</h1>
+    <h1>Admin login</h1> 
 
     <form class="admin-login-form" method="post" action="{{ route('admin.login.store') }}">
         @csrf
