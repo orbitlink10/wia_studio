@@ -13,75 +13,85 @@ use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 
-function wia_project_categories(): array
-{
-    return [
-        'architecture' => 'Architecture',
-        'interiors' => 'Interiors',
-        'planning' => 'Planning',
-        'furniture' => 'Furniture',
-        'landscape' => 'Landscape',
-    ];
+if (! function_exists('wia_project_categories')) {
+    function wia_project_categories(): array
+    {
+        return [
+            'architecture' => 'Architecture',
+            'interiors' => 'Interiors',
+            'planning' => 'Planning',
+            'furniture' => 'Furniture',
+            'landscape' => 'Landscape',
+        ];
+    }
 }
 
-function wia_project_typology(string $category, ?string $detail): string
-{
-    $label = wia_project_categories()[$category] ?? Str::title($category);
-    $detail = trim((string) $detail);
+if (! function_exists('wia_project_typology')) {
+    function wia_project_typology(string $category, ?string $detail): string
+    {
+        $label = wia_project_categories()[$category] ?? Str::title($category);
+        $detail = trim((string) $detail);
 
-    return $detail === '' ? $label : $label.' - '.$detail;
+        return $detail === '' ? $label : $label.' - '.$detail;
+    }
 }
 
-function wia_store_uploaded_image(Request $request, string $field): ?string
-{
-    if (! $request->hasFile($field)) {
-        return null;
-    }
-
-    $file = $request->file($field);
-    $directory = public_path('assets/uploads/projects');
-
-    if (! is_dir($directory)) {
-        mkdir($directory, 0755, true);
-    }
-
-    $name = Str::slug(pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME)) ?: 'image';
-    $filename = $name.'-'.Str::random(8).'.'.$file->getClientOriginalExtension();
-    $file->move($directory, $filename);
-
-    return '/assets/uploads/projects/'.$filename;
-}
-
-function wia_media_url(?string $url): string
-{
-    $url = trim((string) $url);
-
-    if ($url === '') {
-        return '';
-    }
-
-    if (preg_match('/^(https?:)?\/\//i', $url) || str_starts_with($url, 'data:')) {
-        return $url;
-    }
-
-    $path = ltrim($url, '/');
-    $base = rtrim(request()->getBaseUrl(), '/');
-
-    return ($base === '' ? '' : $base).'/'.$path;
-}
-
-function wia_apply_project_slide_uploads(Request $request, array $validated): array
-{
-    foreach (['overview_image', 'spatial_image', 'material_image', 'delivery_image'] as $field) {
-        $uploadedImage = wia_store_uploaded_image($request, $field.'_file');
-        if ($uploadedImage) {
-            $validated[$field] = $uploadedImage;
+if (! function_exists('wia_store_uploaded_image')) {
+    function wia_store_uploaded_image(Request $request, string $field): ?string
+    {
+        if (! $request->hasFile($field)) {
+            return null;
         }
 
-        unset($validated[$field.'_file']);
-    }
+        $file = $request->file($field);
+        $directory = public_path('assets/uploads/projects');
 
-    return $validated;
+        if (! is_dir($directory)) {
+            mkdir($directory, 0755, true);
+        }
+
+        $name = Str::slug(pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME)) ?: 'image';
+        $filename = $name.'-'.Str::random(8).'.'.$file->getClientOriginalExtension();
+        $file->move($directory, $filename);
+
+        return '/assets/uploads/projects/'.$filename;
+    }
+}
+
+if (! function_exists('wia_media_url')) {
+    function wia_media_url(?string $url): string
+    {
+        $url = trim((string) $url);
+
+        if ($url === '') {
+            return '';
+        }
+
+        if (preg_match('/^(https?:)?\/\//i', $url) || str_starts_with($url, 'data:')) {
+            return $url;
+        }
+
+        $path = ltrim($url, '/');
+        $base = rtrim(request()->getBaseUrl(), '/');
+
+        return ($base === '' ? '' : $base).'/'.$path;
+    }
+}
+
+if (! function_exists('wia_apply_project_slide_uploads')) {
+    function wia_apply_project_slide_uploads(Request $request, array $validated): array
+    {
+        foreach (['overview_image', 'spatial_image', 'material_image', 'delivery_image'] as $field) {
+            $uploadedImage = wia_store_uploaded_image($request, $field.'_file');
+            if ($uploadedImage) {
+                $validated[$field] = $uploadedImage;
+            }
+
+            unset($validated[$field.'_file']);
+        }
+
+        return $validated;
+    }
 }
 
 Route::get('/', function () {
