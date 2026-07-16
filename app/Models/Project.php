@@ -21,7 +21,11 @@ class Project extends Model
         'size',
         'status',
         'hero_image',
+        'overview_image',
         'summary',
+        'spatial_image',
+        'material_image',
+        'delivery_image',
         'featured',
     ];
 

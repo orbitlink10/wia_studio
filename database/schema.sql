@@ -9,7 +9,11 @@ CREATE TABLE IF NOT EXISTS projects (
     size TEXT NOT NULL,
     status TEXT NOT NULL,
     hero_image TEXT NOT NULL,
+    overview_image TEXT,
     summary TEXT NOT NULL,
+    spatial_image TEXT,
+    material_image TEXT,
+    delivery_image TEXT,
     featured INTEGER NOT NULL DEFAULT 0,
     created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
 );

@@ -52,6 +52,38 @@ function wia_store_uploaded_image(Request $request, string $field): ?string
     return '/assets/uploads/projects/'.$filename;
 }
 
+function wia_media_url(?string $url): string
+{
+    $url = trim((string) $url);
+
+    if ($url === '') {
+        return '';
+    }
+
+    if (preg_match('/^(https?:)?\/\//i', $url) || str_starts_with($url, 'data:')) {
+        return $url;
+    }
+
+    $path = ltrim($url, '/');
+    $base = rtrim(request()->getBaseUrl(), '/');
+
+    return ($base === '' ? '' : $base).'/'.$path;
+}
+
+function wia_apply_project_slide_uploads(Request $request, array $validated): array
+{
+    foreach (['overview_image', 'spatial_image', 'material_image', 'delivery_image'] as $field) {
+        $uploadedImage = wia_store_uploaded_image($request, $field.'_file');
+        if ($uploadedImage) {
+            $validated[$field] = $uploadedImage;
+        }
+
+        unset($validated[$field.'_file']);
+    }
+
+    return $validated;
+}
+
 Route::get('/', function () {
     return view('projects.index', [
         'projects' => Project::with(['chapters' => fn ($query) => $query->orderBy('position'), 'credits'])->latest('year')->get(),
@@ -300,7 +332,15 @@ Route::post('/admin/projects', function (Request $request) {
         'status' => ['required', 'string', 'max:120'],
         'hero_image' => ['nullable', 'string', 'max:500'],
         'hero_image_file' => ['nullable', 'image', 'max:8192'],
+        'overview_image' => ['nullable', 'string', 'max:500'],
+        'overview_image_file' => ['nullable', 'image', 'max:8192'],
         'summary' => ['required', 'string', 'max:4000'],
+        'spatial_image' => ['nullable', 'string', 'max:500'],
+        'spatial_image_file' => ['nullable', 'image', 'max:8192'],
+        'material_image' => ['nullable', 'string', 'max:500'],
+        'material_image_file' => ['nullable', 'image', 'max:8192'],
+        'delivery_image' => ['nullable', 'string', 'max:500'],
+        'delivery_image_file' => ['nullable', 'image', 'max:8192'],
     ]);
 
     $uploadedHero = wia_store_uploaded_image($request, 'hero_image_file');
@@ -311,6 +351,8 @@ Route::post('/admin/projects', function (Request $request) {
     if (empty($validated['hero_image'])) {
         return back()->withErrors(['hero_image' => 'Please upload a hero image or paste a hero image URL.'])->withInput();
     }
+
+    $validated = wia_apply_project_slide_uploads($request, $validated);
 
     $baseSlug = Str::slug($validated['slug'] ?: $validated['title']);
     $slug = $baseSlug;
@@ -344,7 +386,15 @@ Route::patch('/admin/projects/{project}', function (Request $request, Project $p
         'status' => ['required', 'string', 'max:120'],
         'hero_image' => ['nullable', 'string', 'max:500'],
         'hero_image_file' => ['nullable', 'image', 'max:8192'],
+        'overview_image' => ['nullable', 'string', 'max:500'],
+        'overview_image_file' => ['nullable', 'image', 'max:8192'],
         'summary' => ['required', 'string', 'max:4000'],
+        'spatial_image' => ['nullable', 'string', 'max:500'],
+        'spatial_image_file' => ['nullable', 'image', 'max:8192'],
+        'material_image' => ['nullable', 'string', 'max:500'],
+        'material_image_file' => ['nullable', 'image', 'max:8192'],
+        'delivery_image' => ['nullable', 'string', 'max:500'],
+        'delivery_image_file' => ['nullable', 'image', 'max:8192'],
     ]);
 
     $uploadedHero = wia_store_uploaded_image($request, 'hero_image_file');
@@ -356,6 +406,8 @@ Route::patch('/admin/projects/{project}', function (Request $request, Project $p
         return back()->withErrors(['hero_image' => 'Please upload a hero image or keep the current hero image URL.'])->withInput();
     }
 
+    $validated = wia_apply_project_slide_uploads($request, $validated);
+
     $validated['slug'] = $validated['slug'] ?: Str::slug($validated['title']);
     $validated['typology'] = wia_project_typology($validated['category'], $validated['typology_detail'] ?? null);
     $validated['featured'] = $request->boolean('featured');
@@ -365,6 +417,14 @@ Route::patch('/admin/projects/{project}', function (Request $request, Project $p
 
     return redirect()->route('admin.dashboard')->with('status', 'Project updated.');
 })->middleware('auth')->name('admin.projects.update');
+
+Route::delete('/admin/projects/{project}', function (Project $project) {
+    $title = $project->title;
+
+    $project->delete();
+
+    return redirect()->route('admin.dashboard')->with('status', $title.' deleted.');
+})->middleware('auth')->name('admin.projects.destroy');
 
 Route::post('/admin/projects/{project}/chapters', function (Request $request, Project $project) {
     $validated = $request->validate([

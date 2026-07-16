@@ -4,39 +4,7 @@
 
 @section('content')
 <section class="big-index" id="projects">
-    <div class="big-category-panel" id="categoryPanel">
-        <div data-panel="architecture">
-            <h2>+Architecture</h2>
-            <a href="{{ route('projects.index') }}">View all</a>
-            <a href="{{ route('projects.index') }}">Residential</a>
-            <a href="{{ route('projects.index') }}">Education</a>
-            <a href="{{ route('projects.index') }}">Commercial</a>
-        </div>
-        <div data-panel="interiors">
-            <h2>+Interiors</h2>
-            <a href="{{ route('projects.index') }}">View all</a>
-            <a href="{{ route('home') }}#services">Fit-outs</a>
-            <a href="{{ route('home') }}#services">Material palettes</a>
-        </div>
-        <div data-panel="landscape">
-            <h2>+Landscape</h2>
-            <a href="{{ route('projects.index') }}">Courtyards</a>
-            <a href="{{ route('projects.index') }}">Gardens</a>
-            <a href="{{ route('projects.index') }}">Terraces</a>
-        </div>
-        <div data-panel="planning">
-            <h2>+Planning</h2>
-            <a href="{{ route('home') }}#services">Master planning</a>
-            <a href="{{ route('home') }}#services">Feasibility</a>
-            <a href="{{ route('home') }}#services">Approvals</a>
-        </div>
-        <div data-panel="products">
-            <h2>+Furniture</h2>
-            <a href="{{ route('projects.index') }}">Furniture</a>
-            <a href="{{ route('projects.index') }}">Lighting</a>
-            <a href="{{ route('projects.index') }}">Objects</a>
-        </div>
-    </div>
+    @include('partials.category-panel')
 
     <div class="big-project-list">
         @foreach ($projects as $project)
@@ -46,7 +14,7 @@
                     <h2>{{ $project->title }}</h2>
                     <p>{{ $project->location }}</p>
                 </div>
-                <img class="big-project-image" src="{{ $project->hero_image }}" alt="{{ $project->title }}">
+                <img class="big-project-image" src="{{ wia_media_url($project->hero_image) }}" alt="{{ $project->title }}">
             </a>
         @endforeach
     </div>

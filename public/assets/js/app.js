@@ -64,7 +64,10 @@ categoryTriggers.forEach((trigger) => {
     trigger.addEventListener("mouseenter", activate);
     trigger.addEventListener("focus", activate);
     trigger.addEventListener("click", (event) => {
-        if (categoryPanel && window.innerWidth > 920) {
+        const canOpenPanel = categoryPanel && window.innerWidth > 920;
+        const canFilterProjects = projectRows.length > 0;
+
+        if (canOpenPanel && !canFilterProjects) {
             event.preventDefault();
             activate();
         }
@@ -224,6 +227,132 @@ const optimizedImage = (url = "", width = 1400) => {
     return `${url}${joiner}auto=format&fit=crop&w=${width}&q=78`;
 };
 
+const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+const glideHorizontalTrack = (track, options = {}) => {
+    const speed = options.speed || 1;
+    const wheelMode = options.wheelMode || "intentional";
+    let target = track.scrollLeft;
+    let frame = null;
+    let lastWheelAt = 0;
+    let drag = {
+        active: false,
+        startX: 0,
+        startScroll: 0,
+    };
+
+    const maxScroll = () => Math.max(0, track.scrollWidth - track.clientWidth);
+    const clamp = (value) => Math.max(0, Math.min(maxScroll(), value));
+
+    const animate = () => {
+        const delta = target - track.scrollLeft;
+        if (Math.abs(delta) < 0.5 || prefersReducedMotion) {
+            track.scrollLeft = target;
+            frame = null;
+            return;
+        }
+
+        track.scrollLeft += delta * 0.16;
+        frame = requestAnimationFrame(animate);
+    };
+
+    const glideTo = (value, instant = false) => {
+        target = clamp(value);
+
+        if (instant || prefersReducedMotion) {
+            track.scrollLeft = target;
+            if (frame) cancelAnimationFrame(frame);
+            frame = null;
+            return;
+        }
+
+        if (!frame) frame = requestAnimationFrame(animate);
+    };
+
+    track.addEventListener("scroll", () => {
+        if (!frame) target = track.scrollLeft;
+    }, { passive: true });
+
+    track.addEventListener("wheel", (event) => {
+        if (window.innerWidth <= 700) return;
+
+        const horizontalIntent = Math.abs(event.deltaX) > Math.abs(event.deltaY) * 0.72;
+        const recentRailIntent = Date.now() - lastWheelAt < 420;
+        const verticalToHorizontal = wheelMode === "gallery" && (event.shiftKey || recentRailIntent);
+        const railDelta = horizontalIntent ? event.deltaX : (verticalToHorizontal ? event.deltaY : 0);
+
+        if (!railDelta) return;
+
+        const next = clamp(target + railDelta * speed);
+        const canMove = Math.abs(next - target) > 0.5;
+
+        if (!canMove) {
+            lastWheelAt = 0;
+            return;
+        }
+
+        event.preventDefault();
+        lastWheelAt = Date.now();
+        glideTo(next);
+    }, { passive: false });
+
+    track.addEventListener("pointerdown", (event) => {
+        if (event.button !== 0 || event.target.closest("a,button,input,select,textarea,summary")) return;
+
+        drag = {
+            active: true,
+            startX: event.clientX,
+            startScroll: track.scrollLeft,
+        };
+        if (frame) cancelAnimationFrame(frame);
+        frame = null;
+        track.classList.add("is-dragging");
+        track.setPointerCapture?.(event.pointerId);
+    });
+
+    track.addEventListener("pointermove", (event) => {
+        if (!drag.active) return;
+
+        event.preventDefault();
+        target = clamp(drag.startScroll + drag.startX - event.clientX);
+        track.scrollLeft = target;
+    });
+
+    const stopDrag = (event) => {
+        if (!drag.active) return;
+
+        drag.active = false;
+        track.classList.remove("is-dragging");
+        track.releasePointerCapture?.(event.pointerId);
+    };
+
+    track.addEventListener("pointerup", stopDrag);
+    track.addEventListener("pointercancel", stopDrag);
+    track.addEventListener("lostpointercapture", () => {
+        drag.active = false;
+        track.classList.remove("is-dragging");
+    });
+
+    track.addEventListener("keydown", (event) => {
+        if (!["ArrowLeft", "ArrowRight", "Home", "End"].includes(event.key)) return;
+
+        event.preventDefault();
+        const nudge = Math.max(280, track.clientWidth * 0.72);
+        if (event.key === "Home") glideTo(0);
+        if (event.key === "End") glideTo(maxScroll());
+        if (event.key === "ArrowLeft") glideTo(target - nudge);
+        if (event.key === "ArrowRight") glideTo(target + nudge);
+    });
+
+    window.addEventListener("resize", () => glideTo(track.scrollLeft, true));
+
+    return { glideTo };
+};
+
+document.querySelectorAll(".admin-slide-strip").forEach((track) => {
+    glideHorizontalTrack(track, { speed: 1.05, wheelMode: "gallery" });
+});
+
 const buildInlineSlides = (row, images, chapters) => {
     const title = row.dataset.title || "Project";
     const hero = images[0] || row.querySelector(".pl-img img")?.src || "";
@@ -240,7 +369,7 @@ const buildInlineSlides = (row, images, chapters) => {
 
     const slides = [
         { type: "hero", label: title, body: row.dataset.location || "", image: hero },
-        { type: "copy", label: "Overview", body: summary, image: hero },
+        { type: "copy", label: "Overview", body: summary, image: row.dataset.overviewImage || hero },
         { type: "facts", label: "Project Facts", body: summary, image: hero },
         ...chapterSlides.map((chapter) => ({
             type: "story",
@@ -256,19 +385,19 @@ const buildInlineSlides = (row, images, chapters) => {
             type: "copy",
             label: "Spatial Strategy",
             body: "A consistent slide sequence keeps the project easy to scan, share, and review across devices.",
-            image: supportImages[0] || hero,
+            image: row.dataset.spatialImage || supportImages[0] || hero,
         },
         {
             type: "story",
             label: "Material And Atmosphere",
             body: "Media is lazy loaded and sized for the deck so the presentation remains quick without losing the studio tone.",
-            image: supportImages[1] || hero,
+            image: row.dataset.materialImage || supportImages[1] || hero,
         },
         {
             type: "copy",
             label: "Delivery Notes",
             body: `${row.dataset.status || "Project"} / ${row.dataset.size || ""} / ${row.dataset.typology || ""}`,
-            image: supportImages[2] || hero,
+            image: row.dataset.deliveryImage || supportImages[2] || hero,
         },
     );
 
@@ -324,13 +453,11 @@ const onExpandedWheel = (event) => {
 
     const { panel } = activeProjectDetail;
     const track = panel.querySelector("[data-inline-track]");
-    const updateProgress = activeProjectDetail.updateProgress;
 
     if (Math.abs(event.deltaX) > Math.abs(event.deltaY)) {
         if (!track) return;
         event.preventDefault();
         track.scrollLeft += event.deltaX;
-        updateProgress?.();
         return;
     }
 
@@ -338,7 +465,6 @@ const onExpandedWheel = (event) => {
         if (track && track.scrollLeft > 2) {
             event.preventDefault();
             track.scrollLeft += event.deltaY;
-            updateProgress?.();
         }
         return;
     }
@@ -350,7 +476,6 @@ const onExpandedWheel = (event) => {
         if (inTrack && track.scrollLeft < maxScroll - 2 && track.scrollLeft > 2) {
             event.preventDefault();
             track.scrollLeft += event.deltaY;
-            updateProgress?.();
             return;
         }
 
@@ -489,7 +614,6 @@ const openInlineProject = (row) => {
                     </section>`;
             }).join("")}
         </div>
-        <div class="pl-detail-progress" aria-hidden="true"><span data-inline-progress></span></div>
     `;
 
     row.classList.add("is-expanded");
@@ -497,26 +621,20 @@ const openInlineProject = (row) => {
     lockPageScroll();
 
     const track = panel.querySelector("[data-inline-track]");
-    const progress = panel.querySelector("[data-inline-progress]");
-    const updateInlineProgress = () => {
-        if (!track || !progress) return;
-        const max = Math.max(1, track.scrollWidth - track.clientWidth);
-        progress.style.width = `${Math.min(100, (track.scrollLeft / max) * 100)}%`;
-    };
+    const inlineGlide = track ? glideHorizontalTrack(track, { speed: 1.15, wheelMode: "gallery" }) : null;
 
-    activeProjectDetail = { trigger: row, panel, updateProgress: updateInlineProgress };
+    activeProjectDetail = { trigger: row, panel };
 
     panel.querySelector("[data-inline-copy]")?.addEventListener("click", async (event) => {
         const button = event.currentTarget;
         await navigator.clipboard.writeText(button.dataset.inlineCopy);
         button.textContent = "Copied";
     });
-    track?.addEventListener("scroll", updateInlineProgress);
 
     window.setTimeout(() => {
         requestAnimationFrame(() => {
             panel.classList.add("is-open");
-            updateInlineProgress();
+            inlineGlide?.glideTo(0, true);
             bindExpandedScrollHandlers();
         });
     }, 80);
@@ -550,19 +668,19 @@ document.querySelector("[data-print]")?.addEventListener("click", () => {
 
 document.querySelectorAll("[data-project-slide-track]").forEach((track) => {
     const slides = [...track.querySelectorAll(".project-slide")];
-    const progress = document.querySelector("[data-project-slide-progress]");
     const previous = document.querySelector("[data-slide-prev]");
     const next = document.querySelector("[data-slide-next]");
 
     if (!slides.length) return;
 
     const setActiveSlide = () => {
-        const center = track.scrollLeft + track.clientWidth / 2;
+        const center = window.scrollY + window.innerHeight / 2;
         let activeIndex = 0;
         let activeDistance = Number.POSITIVE_INFINITY;
 
         slides.forEach((slide, index) => {
-            const slideCenter = slide.offsetLeft + slide.offsetWidth / 2;
+            const rect = slide.getBoundingClientRect();
+            const slideCenter = window.scrollY + rect.top + rect.height / 2;
             const distance = Math.abs(center - slideCenter);
             if (distance < activeDistance) {
                 activeIndex = index;
@@ -571,31 +689,16 @@ document.querySelectorAll("[data-project-slide-track]").forEach((track) => {
         });
 
         slides.forEach((slide, index) => slide.classList.toggle("is-active", index === activeIndex));
-        const max = Math.max(1, track.scrollWidth - track.clientWidth);
-        if (progress) progress.style.width = `${Math.min(100, (track.scrollLeft / max) * 100)}%`;
     };
 
     const scrollBySlide = (direction) => {
         const activeIndex = slides.findIndex((slide) => slide.classList.contains("is-active"));
         const nextIndex = Math.max(0, Math.min(slides.length - 1, activeIndex + direction));
-        slides[nextIndex]?.scrollIntoView({ behavior: "smooth", block: "nearest", inline: "start" });
+        const nextSlide = slides[nextIndex];
+        nextSlide?.scrollIntoView({ behavior: prefersReducedMotion ? "auto" : "smooth", block: "center" });
     };
 
-    track.addEventListener("scroll", () => requestAnimationFrame(setActiveSlide));
-    track.addEventListener("wheel", (event) => {
-        if (window.innerWidth <= 920 || Math.abs(event.deltaX) > Math.abs(event.deltaY)) return;
-
-        const movingRight = event.deltaY > 0;
-        const movingLeft = event.deltaY < 0;
-        const maxScroll = track.scrollWidth - track.clientWidth - 2;
-        const canMoveRight = movingRight && track.scrollLeft < maxScroll;
-        const canMoveLeft = movingLeft && track.scrollLeft > 2;
-
-        if (!canMoveRight && !canMoveLeft) return;
-
-        event.preventDefault();
-        track.scrollLeft += event.deltaY;
-    }, { passive: false });
+    window.addEventListener("scroll", () => requestAnimationFrame(setActiveSlide), { passive: true });
 
     previous?.addEventListener("click", () => scrollBySlide(-1));
     next?.addEventListener("click", () => scrollBySlide(1));

@@ -16,7 +16,7 @@
             return $url.$separator.'auto=format&fit=crop&w='.$width.'&q=78';
         }
 
-        return $url;
+        return wia_media_url($url);
     };
 
     $chapterSlides = $project->chapters->take(5)->map(fn ($chapter) => [
@@ -50,7 +50,7 @@
             'eyebrow' => 'Overview',
             'title' => 'Overview',
             'body' => $project->summary,
-            'image' => $project->hero_image,
+            'image' => $project->overview_image ?: $project->hero_image,
         ],
         [
             'type' => 'facts',
@@ -67,21 +67,21 @@
             'eyebrow' => 'Spatial Strategy',
             'title' => 'Spatial Strategy',
             'body' => 'The project is presented through a consistent sequence of context, brief, spatial moves, material direction, delivery notes, and credits.',
-            'image' => $project->chapters->first()?->image ?? $project->hero_image,
+            'image' => $project->spatial_image ?: ($project->chapters->first()?->image ?? $project->hero_image),
         ],
         [
             'type' => 'media',
             'eyebrow' => 'Material And Atmosphere',
             'title' => 'Material And Atmosphere',
             'body' => 'Images are optimized for fast loading while preserving the visual tone of the studio archive.',
-            'image' => $project->chapters->skip(1)->first()?->image ?? $project->hero_image,
+            'image' => $project->material_image ?: ($project->chapters->skip(1)->first()?->image ?? $project->hero_image),
         ],
         [
             'type' => 'copy',
             'eyebrow' => 'Delivery Notes',
             'title' => 'Delivery Notes',
             'body' => $project->status.' / '.$project->size.' m2 / ft2 / '.$project->typology,
-            'image' => $project->chapters->skip(2)->first()?->image ?? $project->hero_image,
+            'image' => $project->delivery_image ?: ($project->chapters->skip(2)->first()?->image ?? $project->hero_image),
         ],
         [
             'type' => 'credits',
@@ -191,7 +191,6 @@
             </section>
         @endforeach
     </div>
-    <div class="project-slide-progress" aria-hidden="true"><span data-project-slide-progress></span></div>
 </section>
 
 <section class="big-next-list">
@@ -202,7 +201,7 @@
                 <h2>{{ $item->title }}</h2>
                 <p>{{ $item->location }}</p>
             </div>
-            <img class="big-project-image" src="{{ $item->hero_image }}" alt="{{ $item->title }}">
+            <img class="big-project-image" src="{{ wia_media_url($item->hero_image) }}" alt="{{ $item->title }}">
         </a>
     @endforeach
 </section>

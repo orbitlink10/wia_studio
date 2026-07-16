@@ -1389,14 +1389,16 @@ textarea {
     grid-template-columns: 262px minmax(0, 1fr);
     gap: 0;
     min-height: calc(100svh - 90px);
-    padding: 34px 0 72px;
+    padding: 34px 0 96px;
     background: #fff;
-    overflow: hidden;
+    overflow: visible;
 }
 
 .big-project-sidebar {
+    position: sticky;
+    top: 82px;
     width: 262px;
-    min-height: calc(100svh - 196px);
+    height: calc(100svh - 116px);
     padding: 0 28px;
     display: flex;
     flex-direction: column;
@@ -1469,17 +1471,20 @@ textarea {
 }
 
 .big-wide-track {
-    display: flex;
-    align-items: stretch;
-    gap: 0;
+    display: grid;
+    align-items: start;
+    gap: 86px;
     min-width: 0;
-    height: calc(100svh - 196px);
-    min-height: 560px;
-    overflow-x: auto;
-    overflow-y: hidden;
-    scroll-snap-type: x mandatory;
-    scroll-behavior: smooth;
+    width: min(1260px, 100%);
+    height: auto;
+    min-height: 0;
+    overflow: visible;
+    scroll-snap-type: none;
+    scroll-behavior: auto;
     scrollbar-width: none;
+    cursor: default;
+    padding: 0 clamp(28px, 5vw, 76px) 0 0;
+    touch-action: pan-y pan-x;
 }
 
 .big-wide-track::-webkit-scrollbar {
@@ -1487,28 +1492,34 @@ textarea {
 }
 
 .project-slide {
-    flex: 0 0 min(1180px, calc(100vw - 310px));
-    height: 100%;
+    width: min(1080px, 100%);
+    min-height: min(760px, calc(100svh - 160px));
     display: grid;
-    grid-template-columns: minmax(420px, 1fr) minmax(260px, 360px);
-    gap: 34px;
-    padding-right: 34px;
-    scroll-snap-align: start;
-    opacity: 0.42;
-    transform: translateX(12px);
-    transition: opacity 0.36s ease, transform 0.36s ease;
+    grid-template-columns: minmax(420px, 760px) minmax(240px, 330px);
+    gap: clamp(28px, 4vw, 58px);
+    align-items: center;
+    opacity: 0.72;
+    transform: translateY(18px);
+    transform-origin: center center;
+    transition: opacity 0.58s ease, transform 0.58s ease;
 }
 
 .project-slide.is-active,
 .project-slide:first-child {
     opacity: 1;
-    transform: translateX(0);
+    transform: translateY(0);
+}
+
+.project-slide:hover {
+    opacity: 0.9;
 }
 
 .project-slide-copy,
 .project-slide-facts,
 .project-slide-credits {
-    grid-template-columns: minmax(320px, 560px);
+    width: min(700px, 100%);
+    grid-template-columns: minmax(320px, 620px);
+    min-height: min(540px, 70svh);
 }
 
 .project-slide-copy .wide-copy,
@@ -1518,12 +1529,7 @@ textarea {
 }
 
 .project-slide-controls {
-    width: 100%;
-    margin-top: 18px;
-    display: grid;
-    grid-template-columns: 1fr auto 1fr;
-    gap: 8px;
-    align-items: center;
+    display: none;
 }
 
 .project-slide-controls button {
@@ -1545,27 +1551,15 @@ textarea {
 }
 
 .project-slide-progress {
-    position: absolute;
-    left: 262px;
-    right: 34px;
-    bottom: 38px;
-    height: 2px;
-    background: rgba(42, 85, 69, 0.16);
-}
-
-.project-slide-progress span {
-    display: block;
-    width: 0;
-    height: 100%;
-    background: var(--moss);
-    transition: width 0.16s linear;
+    display: none;
 }
 
 .wide-media {
     margin: 0;
     width: 100%;
-    height: 100%;
-    min-height: 0;
+    height: auto;
+    min-height: min(620px, 72svh);
+    aspect-ratio: 16 / 10;
     flex: 1 1 auto;
     background: var(--mist);
     overflow: hidden;
@@ -1579,6 +1573,13 @@ textarea {
     width: 100%;
     height: 100%;
     object-fit: cover;
+    transform: scale(1.002);
+    transition: transform 0.7s ease;
+}
+
+.project-slide.is-active .wide-media img,
+.project-slide:hover .wide-media img {
+    transform: scale(1.018);
 }
 
 .wide-copy {
@@ -2511,6 +2512,32 @@ form button {
     display: block;
 }
 
+.admin-topbar-actions {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+}
+
+.admin-client-link {
+    min-height: 40px;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    border: 1px solid rgba(42, 85, 69, 0.34);
+    color: var(--moss);
+    padding: 10px 14px;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+}
+
+.admin-client-link span {
+    font-size: 18px;
+    line-height: 1;
+}
+
 .admin-topbar button,
 .admin-login-form button {
     min-height: 40px;
@@ -2694,6 +2721,15 @@ form button {
     text-transform: uppercase;
 }
 
+.admin-delete-form {
+    padding: 0 20px 24px;
+}
+
+.admin-editor .admin-danger-button {
+    border-color: #8f2f24;
+    background: #8f2f24;
+}
+
 .admin-project-preview {
     display: grid;
     grid-template-columns: minmax(220px, 320px) minmax(0, 640px);
@@ -2805,14 +2841,26 @@ form button {
     gap: 14px;
     overflow-x: auto;
     overscroll-behavior-inline: contain;
-    scroll-snap-type: x proximity;
+    scroll-snap-type: none;
     padding: 4px 2px 16px;
+    scrollbar-width: none;
+    -webkit-overflow-scrolling: touch;
+    cursor: grab;
+    touch-action: pan-y pan-x;
+}
+
+.admin-slide-strip::-webkit-scrollbar {
+    display: none;
+}
+
+.admin-slide-strip:active,
+.admin-slide-strip.is-dragging {
+    cursor: grabbing;
 }
 
 .admin-slide-panel {
     flex: 0 0 min(520px, 76vw);
     min-height: 270px;
-    scroll-snap-align: start;
     border: 1px solid rgba(18, 22, 20, 0.12);
     background: #fff;
     color: var(--ink);
@@ -4277,20 +4325,7 @@ body.pl-detail-active {
 }
 
 .pl-detail-progress {
-    position: absolute;
-    left: clamp(28px, 5vw, 72px);
-    right: clamp(28px, 5vw, 72px);
-    bottom: clamp(24px, 4vh, 36px);
-    height: 2px;
-    background: rgba(90, 171, 138, 0.28);
-}
-
-.pl-detail-progress span {
-    display: block;
-    width: 0;
-    height: 100%;
-    background: var(--teal-bright);
-    transition: width 0.12s linear;
+    display: none;
 }
 
 .pl-detail-side {
@@ -4381,15 +4416,30 @@ body.pl-detail-active {
     gap: 0;
     overflow-x: auto;
     overflow-y: hidden;
-    scroll-snap-type: x mandatory;
-    scroll-behavior: smooth;
+    scroll-snap-type: none;
+    scroll-behavior: auto;
     scroll-padding-inline: 0;
     padding: 0;
+    overscroll-behavior-inline: contain;
+    -webkit-overflow-scrolling: touch;
     scrollbar-width: none;
+    cursor: grab;
+    touch-action: pan-y pan-x;
 }
 
 .pl-detail-main::-webkit-scrollbar {
     display: none;
+}
+
+.pl-detail-main:active,
+.pl-detail-main.is-dragging {
+    cursor: grabbing;
+}
+
+.big-wide-track.is-dragging *,
+.admin-slide-strip.is-dragging *,
+.pl-detail-main.is-dragging * {
+    user-select: none;
 }
 
 .pl-detail-main figure {
@@ -4403,6 +4453,12 @@ body.pl-detail-active {
     height: 100%;
     display: block;
     object-fit: cover;
+    transform: scale(1.002);
+    transition: transform 0.7s ease;
+}
+
+.pl-detail-panel:hover img {
+    transform: scale(1.016);
 }
 
 .pl-detail-panel {
@@ -4413,7 +4469,6 @@ body.pl-detail-active {
     display: flex;
     align-items: center;
     justify-content: center;
-    scroll-snap-align: center;
     padding: 0 clamp(28px, 5vw, 72px);
     box-sizing: border-box;
 }

@@ -34,16 +34,27 @@
         return $detail;
     };
 @endphp
+@include('partials.category-panel', [
+    'categoryPanelProjectUrl' => route('projects.index'),
+    'categoryPanelServiceUrl' => route('projects.index'),
+])
+
 <section class="admin">
     <div class="admin-topbar">
         <div>
             <p class="eyebrow">Backend</p>
             <h1>WIA Studio dashboard</h1>
         </div>
-        <form method="post" action="{{ route('admin.logout') }}">
-            @csrf
-            <button type="submit">Logout</button>
-        </form>
+        <div class="admin-topbar-actions">
+            <a class="admin-client-link" href="{{ route('projects.index') }}" aria-label="Back to client side">
+                <span aria-hidden="true">←</span>
+                Client side
+            </a>
+            <form method="post" action="{{ route('admin.logout') }}">
+                @csrf
+                <button type="submit">Logout</button>
+            </form>
+        </div>
     </div>
 
     @if (session('status')) <p class="notice">{{ session('status') }}</p> @endif
@@ -200,7 +211,21 @@
                 <label>Upload hero image<input type="file" name="hero_image_file" accept="image/*"></label>
                 <label>Or paste hero image URL<input name="hero_image" value="{{ old('hero_image') }}" placeholder="https://..."></label>
             </div>
+            <div class="admin-form-grid source-grid">
+                <label>Upload overview slide image<input type="file" name="overview_image_file" accept="image/*"></label>
+                <label>Or paste overview image URL<input name="overview_image" value="{{ old('overview_image') }}" placeholder="Optional; uses hero image if empty"></label>
+            </div>
             <label>Summary<textarea name="summary" rows="4" required>{{ old('summary') }}</textarea></label>
+            <div class="admin-form-grid chapter-grid">
+                <label>Spatial strategy image<input type="file" name="spatial_image_file" accept="image/*"></label>
+                <label>Material slide image<input type="file" name="material_image_file" accept="image/*"></label>
+                <label>Delivery notes image<input type="file" name="delivery_image_file" accept="image/*"></label>
+            </div>
+            <div class="admin-form-grid chapter-grid">
+                <label>Spatial image URL<input name="spatial_image" value="{{ old('spatial_image') }}" placeholder="Optional"></label>
+                <label>Material image URL<input name="material_image" value="{{ old('material_image') }}" placeholder="Optional"></label>
+                <label>Delivery image URL<input name="delivery_image" value="{{ old('delivery_image') }}" placeholder="Optional"></label>
+            </div>
             <label class="admin-check">
                 <input type="checkbox" name="featured" value="1" @checked(old('featured'))>
                 <span>Featured on home page</span>
@@ -229,7 +254,7 @@
                         <small>{{ $project->typology }}</small>
                     </div>
                     <a class="admin-project-preview-image" href="#add-plan-{{ $project->id }}" title="Add more photos and slides">
-                        <img src="{{ $project->hero_image }}" alt="{{ $project->title }}">
+                        <img src="{{ wia_media_url($project->hero_image) }}" alt="{{ $project->title }}">
                         <span>Add photos / slides</span>
                     </a>
                 </div>
@@ -257,12 +282,36 @@
                         <label>Replace hero image<input type="file" name="hero_image_file" accept="image/*"></label>
                         <label>Current hero image URL<input name="hero_image" value="{{ old('hero_image', $project->hero_image) }}"></label>
                     </div>
+                    <div class="admin-form-grid source-grid">
+                        <label>Replace overview slide image<input type="file" name="overview_image_file" accept="image/*"></label>
+                        <label>Overview slide image URL<input name="overview_image" value="{{ old('overview_image', $project->overview_image) }}" placeholder="Uses hero image if empty"></label>
+                    </div>
                     <label>Summary<textarea name="summary" rows="4" required>{{ old('summary', $project->summary) }}</textarea></label>
+                    <div class="admin-form-grid chapter-grid">
+                        <label>Spatial strategy image<input type="file" name="spatial_image_file" accept="image/*"></label>
+                        <label>Material slide image<input type="file" name="material_image_file" accept="image/*"></label>
+                        <label>Delivery notes image<input type="file" name="delivery_image_file" accept="image/*"></label>
+                    </div>
+                    <div class="admin-form-grid chapter-grid">
+                        <label>Spatial image URL<input name="spatial_image" value="{{ old('spatial_image', $project->spatial_image) }}" placeholder="Optional"></label>
+                        <label>Material image URL<input name="material_image" value="{{ old('material_image', $project->material_image) }}" placeholder="Optional"></label>
+                        <label>Delivery image URL<input name="delivery_image" value="{{ old('delivery_image', $project->delivery_image) }}" placeholder="Optional"></label>
+                    </div>
                     <label class="admin-check">
                         <input type="checkbox" name="featured" value="1" @checked(old('featured', $project->featured))>
                         <span>Featured on home page</span>
                     </label>
                     <button type="submit">Save project</button>
+                </form>
+                <form
+                    class="admin-delete-form"
+                    method="post"
+                    action="{{ route('admin.projects.destroy', $project) }}"
+                    onsubmit="return confirm('Delete {{ addslashes($project->title) }}? This removes the project, its plans, and credits from the client side.');"
+                >
+                    @csrf
+                    @method('DELETE')
+                    <button class="admin-danger-button" type="submit">Delete project</button>
                 </form>
                 <div class="admin-chapter-manager">
                     @php
@@ -275,7 +324,7 @@
 
                     <div class="admin-slide-strip" aria-label="{{ $project->title }} horizontal client slides">
                         <article class="admin-slide-panel admin-slide-hero">
-                            <img src="{{ $project->hero_image }}" alt="{{ $project->title }}">
+                            <img src="{{ wia_media_url($project->hero_image) }}" alt="{{ $project->title }}">
                             <span>Hero image</span>
                         </article>
                         <article class="admin-slide-panel admin-slide-copy">
@@ -283,9 +332,17 @@
                             <h4>{{ $project->title }}</h4>
                             <p>{{ $project->summary }}</p>
                         </article>
+                        <article class="admin-slide-panel admin-slide-plan">
+                            <figure><img src="{{ wia_media_url($project->overview_image ?: $project->hero_image) }}" alt="{{ $project->title }} overview"></figure>
+                            <div>
+                                <span>Overview image</span>
+                                <h4>Client overview slide</h4>
+                                <p>{{ $project->overview_image ? 'Custom image uploaded.' : 'Using the hero image fallback.' }}</p>
+                            </div>
+                        </article>
                         @foreach ($project->chapters as $chapter)
                             <article class="admin-slide-panel admin-slide-plan">
-                                <figure><img src="{{ $chapter->image }}" alt="{{ $chapter->label }}"></figure>
+                                <figure><img src="{{ wia_media_url($chapter->image) }}" alt="{{ $chapter->label }}"></figure>
                                 <div>
                                     <span>{{ str_pad($chapter->position, 2, '0', STR_PAD_LEFT) }}</span>
                                     <h4>{{ $chapter->label }}</h4>
@@ -293,6 +350,30 @@
                                 </div>
                             </article>
                         @endforeach
+                        <article class="admin-slide-panel admin-slide-plan">
+                            <figure><img src="{{ wia_media_url($project->spatial_image ?: ($project->chapters->first()?->image ?: $project->hero_image)) }}" alt="{{ $project->title }} spatial strategy"></figure>
+                            <div>
+                                <span>Spatial strategy</span>
+                                <h4>Generated client slide</h4>
+                                <p>{{ $project->spatial_image ? 'Custom image uploaded.' : 'Using a project image fallback.' }}</p>
+                            </div>
+                        </article>
+                        <article class="admin-slide-panel admin-slide-plan">
+                            <figure><img src="{{ wia_media_url($project->material_image ?: ($project->chapters->skip(1)->first()?->image ?: $project->hero_image)) }}" alt="{{ $project->title }} material and atmosphere"></figure>
+                            <div>
+                                <span>Material</span>
+                                <h4>Generated client slide</h4>
+                                <p>{{ $project->material_image ? 'Custom image uploaded.' : 'Using a project image fallback.' }}</p>
+                            </div>
+                        </article>
+                        <article class="admin-slide-panel admin-slide-plan">
+                            <figure><img src="{{ wia_media_url($project->delivery_image ?: ($project->chapters->skip(2)->first()?->image ?: $project->hero_image)) }}" alt="{{ $project->title }} delivery notes"></figure>
+                            <div>
+                                <span>Delivery notes</span>
+                                <h4>Generated client slide</h4>
+                                <p>{{ $project->delivery_image ? 'Custom image uploaded.' : 'Using a project image fallback.' }}</p>
+                            </div>
+                        </article>
                         <a class="admin-slide-panel admin-slide-empty" href="#add-plan-{{ $project->id }}">
                             <span>+</span>
                             <h4>Empty next slide</h4>

@@ -39,13 +39,14 @@
             $detailImages = collect([$project->hero_image])
                 ->merge($project->chapters->pluck('image'))
                 ->filter()
+                ->map(fn ($image) => wia_media_url($image))
                 ->take(4)
                 ->values();
             $detailChapters = $project->chapters
                 ->map(fn ($chapter) => [
                     'label' => $chapter->label,
                     'body' => $chapter->body,
-                    'image' => $chapter->image,
+                    'image' => wia_media_url($chapter->image),
                 ])
                 ->values();
         @endphp
@@ -65,6 +66,10 @@
             data-size="{{ $project->size }}"
             data-status="{{ $project->status }}"
             data-summary="{{ $project->summary }}"
+            data-overview-image="{{ wia_media_url($project->overview_image) }}"
+            data-spatial-image="{{ wia_media_url($project->spatial_image) }}"
+            data-material-image="{{ wia_media_url($project->material_image) }}"
+            data-delivery-image="{{ wia_media_url($project->delivery_image) }}"
             data-detail-images='@json($detailImages, JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP | JSON_HEX_TAG)'
             data-detail-chapters='@json($detailChapters, JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP | JSON_HEX_TAG)'
         >
@@ -78,7 +83,7 @@
             </div>
             <div></div>
             <figure class="pl-img">
-                <img src="{{ $project->hero_image }}" alt="{{ $project->title }}" loading="{{ $loop->iteration < 3 ? 'eager' : 'lazy' }}">
+                <img src="{{ wia_media_url($project->hero_image) }}" alt="{{ $project->title }}" loading="{{ $loop->iteration < 3 ? 'eager' : 'lazy' }}">
             </figure>
         </a>
     @endforeach
