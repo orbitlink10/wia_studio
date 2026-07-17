@@ -95,7 +95,6 @@ const projectSubnav = document.getElementById("subnav");
 const projectEmpty = document.getElementById("plEmpty");
 let activeProjectDetail = null;
 let savedScrollY = 0;
-let projectCanvasMovedAt = 0;
 
 const lockPageScroll = () => {
     savedScrollY = window.scrollY;
@@ -229,120 +228,6 @@ const optimizedImage = (url = "", width = 1400) => {
 };
 
 const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-
-const glideProjectCanvas = () => {
-    const canvas = document.querySelector(".pl");
-    if (!canvas || window.innerWidth <= 760 || prefersReducedMotion) return;
-
-    let targetX = window.scrollX;
-    let targetY = window.scrollY;
-    let velocityX = 0;
-    let velocityY = 0;
-    let frame = null;
-    let pointer = null;
-
-    const maxX = () => Math.max(0, document.documentElement.scrollWidth - window.innerWidth);
-    const maxY = () => Math.max(0, document.documentElement.scrollHeight - window.innerHeight);
-    const clamp = (value, max) => Math.max(0, Math.min(max, value));
-    const stopAtBounds = () => {
-        if ((targetX <= 0 && velocityX < 0) || (targetX >= maxX() && velocityX > 0)) velocityX = 0;
-        if ((targetY <= 0 && velocityY < 0) || (targetY >= maxY() && velocityY > 0)) velocityY = 0;
-    };
-
-    const animate = () => {
-        targetX = clamp(targetX + velocityX, maxX());
-        targetY = clamp(targetY + velocityY, maxY());
-        stopAtBounds();
-
-        velocityX *= 0.88;
-        velocityY *= 0.88;
-
-        const dx = targetX - window.scrollX;
-        const dy = targetY - window.scrollY;
-
-        if (Math.abs(dx) < 0.35 && Math.abs(dy) < 0.35 && Math.abs(velocityX) < 0.08 && Math.abs(velocityY) < 0.08) {
-            window.scrollTo(targetX, targetY);
-            velocityX = 0;
-            velocityY = 0;
-            frame = null;
-            return;
-        }
-
-        window.scrollTo(
-            window.scrollX + dx * 0.18,
-            window.scrollY + dy * 0.18,
-        );
-        frame = requestAnimationFrame(animate);
-    };
-
-    const push = (x, y) => {
-        velocityX += x;
-        velocityY += y;
-        if (!frame) frame = requestAnimationFrame(animate);
-    };
-
-    window.addEventListener("wheel", (event) => {
-        if (activeProjectDetail || event.target.closest("input, textarea, select, button")) return;
-
-        const shiftedVertical = event.shiftKey && Math.abs(event.deltaY) > 0;
-        const x = event.deltaX + (shiftedVertical ? event.deltaY : 0);
-        const y = shiftedVertical ? 0 : event.deltaY;
-
-        if (!x && !y) return;
-
-        event.preventDefault();
-        push(x * 0.42, y * 0.42);
-    }, { passive: false });
-
-    window.addEventListener("pointerdown", (event) => {
-        if (event.button !== 0 || activeProjectDetail || event.target.closest("a, button, input, textarea, select, summary")) return;
-
-        pointer = {
-            id: event.pointerId,
-            x: event.clientX,
-            y: event.clientY,
-        };
-        document.body.classList.add("is-project-panning");
-        canvas.setPointerCapture?.(event.pointerId);
-    });
-
-    window.addEventListener("pointermove", (event) => {
-        if (!pointer || pointer.id !== event.pointerId) return;
-
-        const dx = pointer.x - event.clientX;
-        const dy = pointer.y - event.clientY;
-        pointer.x = event.clientX;
-        pointer.y = event.clientY;
-        if (Math.abs(dx) + Math.abs(dy) > 2) projectCanvasMovedAt = Date.now();
-        event.preventDefault();
-        push(dx * 0.95, dy * 0.95);
-    }, { passive: false });
-
-    const stopPointer = (event) => {
-        if (!pointer || pointer.id !== event.pointerId) return;
-
-        pointer = null;
-        document.body.classList.remove("is-project-panning");
-        canvas.releasePointerCapture?.(event.pointerId);
-    };
-
-    window.addEventListener("pointerup", stopPointer);
-    window.addEventListener("pointercancel", stopPointer);
-
-    window.addEventListener("scroll", () => {
-        if (!frame) {
-            targetX = window.scrollX;
-            targetY = window.scrollY;
-        }
-    }, { passive: true });
-
-    window.addEventListener("resize", () => {
-        targetX = clamp(window.scrollX, maxX());
-        targetY = clamp(window.scrollY, maxY());
-    });
-};
-
-glideProjectCanvas();
 
 const glideHorizontalTrack = (track, options = {}) => {
     const speed = options.speed || 1;
@@ -621,7 +506,6 @@ const closeInlineProject = (onClosed, { animate = true } = {}) => {
 
     if (!animate) {
         panel.remove();
-        unlockPageScroll();
         onClosed?.();
         return;
     }
@@ -634,7 +518,6 @@ const closeInlineProject = (onClosed, { animate = true } = {}) => {
         if (finished) return;
         finished = true;
         panel.remove();
-        unlockPageScroll();
         onClosed?.();
     };
 
@@ -683,6 +566,7 @@ const openInlineProject = (row) => {
                                 </dl>
                                 <div class="pl-detail-actions">
                                     <span>Share</span>
+                                    <button type="button" data-inline-close>Close</button>
                                     <a href="${escapeHtml(projectUrl)}">Open page</a>
                                     <button type="button" data-inline-copy="${escapeHtml(projectUrl)}">Copy link</button>
                                 </div>
@@ -732,8 +616,7 @@ const openInlineProject = (row) => {
     `;
 
     row.classList.add("is-expanded");
-    document.body.appendChild(panel);
-    lockPageScroll();
+    row.after(panel);
 
     const track = panel.querySelector("[data-inline-track]");
     const inlineGlide = track ? glideHorizontalTrack(track, { speed: 1.15, wheelMode: "gallery" }) : null;
@@ -746,22 +629,19 @@ const openInlineProject = (row) => {
         button.textContent = "Copied";
     });
 
+    panel.querySelector("[data-inline-close]")?.addEventListener("click", () => closeInlineProject());
+
     window.setTimeout(() => {
         requestAnimationFrame(() => {
             panel.classList.add("is-open");
             inlineGlide?.glideTo(0, true);
-            bindExpandedScrollHandlers();
+            scrollToElement(panel, prefersReducedMotion ? "auto" : "smooth");
         });
     }, 80);
 };
 
 document.querySelectorAll("[data-pl-expand]").forEach((row) => {
     row.addEventListener("click", (event) => {
-        if (Date.now() - projectCanvasMovedAt < 180) {
-            event.preventDefault();
-            return;
-        }
-
         event.preventDefault();
         openInlineProject(row);
     });
