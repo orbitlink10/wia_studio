@@ -288,7 +288,7 @@ Route::patch('/admin/studio-profile', function (Request $request) {
         'products_text' => ['required', 'string', 'max:2000'],
     ]);
 
-    StudioProfile::current()->update($validated);
+    StudioProfile::currentForUpdate()->update($validated);
 
     return redirect()->route('admin.dashboard')->with('status', 'About page content updated.');
 })->middleware('auth')->name('admin.studio-profile.update');

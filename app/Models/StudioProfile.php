@@ -24,9 +24,9 @@ class StudioProfile extends Model
         'products_text',
     ];
 
-    public static function current(): self
+    public static function defaults(): array
     {
-        return static::query()->firstOrCreate([], [
+        return [
             'intro' => 'WIA Studio is a Nairobi-based architecture, interiors, landscape, planning, and product design practice.',
             'body' => 'We pair architectural rigor with the realities of building in East Africa: climate, approvals, budget, craft, maintenance, and the daily rituals that make a place work.',
             'vision' => 'Our vision is to create thoughtful, resilient spaces that help people live, work, gather, and grow with dignity.',
@@ -39,6 +39,16 @@ class StudioProfile extends Model
             'landscape_text' => 'Outdoor rooms, gardens, courtyards, and public grounds that connect people to place.',
             'planning_text' => 'Site strategy, feasibility, approvals, phasing, and frameworks for future growth.',
             'products_text' => 'Objects, furniture, lighting, and details that extend the architectural language into use.',
-        ]);
+        ];
+    }
+
+    public static function current(): self
+    {
+        return static::query()->first() ?? new static(static::defaults());
+    }
+
+    public static function currentForUpdate(): self
+    {
+        return static::query()->firstOrCreate([], static::defaults());
     }
 }
