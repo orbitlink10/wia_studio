@@ -236,7 +236,7 @@
 
     <h2>Project properties</h2>
     <div class="admin-editor-list">
-        @foreach ($projects as $project)
+        @forelse ($projects as $project)
             @php
                 $currentCategory = old('category', $categoryFromTypology($project->typology));
                 $currentTypologyDetail = old('typology_detail', $typologyDetail($project->typology));
@@ -421,7 +421,9 @@
                     @endforeach
                 </div>
             </details>
-        @endforeach
+        @empty
+            <p class="notice">No projects have been added yet. Use the form above to add the first client-facing project.</p>
+        @endforelse
     </div>
 
     <h2>Service cards</h2>
