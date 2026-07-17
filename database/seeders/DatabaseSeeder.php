@@ -10,6 +10,11 @@ use Illuminate\Support\Facades\Hash;
 
 class DatabaseSeeder extends Seeder
 {
+    private function keepExistingUpload(?string $current, ?string $fallback): ?string
+    {
+        return str_starts_with((string) $current, '/assets/uploads/') ? $current : $fallback;
+    }
+
     public function run(): void
     {
         User::updateOrCreate(
@@ -30,7 +35,7 @@ class DatabaseSeeder extends Seeder
                 'typology' => 'Architecture',
                 'size' => 'One-bedroom VIP retreat',
                 'status' => 'Completed',
-                'hero_image' => '/assets/img/yellow-house-01.jpg',
+                'hero_image' => 'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=1800&q=82',
                 'summary' => 'Standing as the first imprint of Hekima Farm\'s vision, Yellow House is more than just a structure. It is a statement of intent: a one-bedroom VIP retreat that balances intimacy with openness, tradition with modernity, and nature with comfort.',
                 'featured' => true,
                 'chapters' => [
@@ -38,31 +43,31 @@ class DatabaseSeeder extends Seeder
                         'position' => 1,
                         'label' => 'A Warm Retreat',
                         'body' => 'Designed as a sanctuary for rest and reconnection, Yellow House invites families to unwind and experience the gentle rhythm of Mutito Andei\'s landscape. It is the architectural embodiment of a warm embrace.',
-                        'image' => '/assets/img/yellow-house-02.jpg',
+                        'image' => 'https://images.unsplash.com/photo-1600566753190-17f0baa2a6c3?auto=format&fit=crop&w=1500&q=82',
                     ],
                     [
                         'position' => 2,
                         'label' => 'Spatial Fluidity',
                         'body' => 'At its core, the chalet is a masterclass in spatial fluidity. The open-plan layout seamlessly integrates the lounge, kitchen, and utility room, fostering a quiet sense of connectedness between functions.',
-                        'image' => '/assets/img/yellow-house-03.jpg',
+                        'image' => 'https://images.unsplash.com/photo-1600607688969-a5bfcd646154?auto=format&fit=crop&w=1500&q=82',
                     ],
                     [
                         'position' => 3,
                         'label' => 'Life Under The Eaves',
                         'body' => 'Two expansive eaves extend the living space beyond its walls, blurring the boundary between indoors and outdoors. These shaded outdoor rooms hold sunrise, midday heat, breeze, and gathering with equal ease.',
-                        'image' => '/assets/img/yellow-house-04.jpg',
+                        'image' => 'https://images.unsplash.com/photo-1600607687920-4e2a09cf159d?auto=format&fit=crop&w=1500&q=82',
                     ],
                     [
                         'position' => 4,
                         'label' => 'Light And Landscape',
                         'body' => 'Whether bathed in golden morning light or protected from the harsh midday sun, the house creates a dynamic interplay of light, shadow, and air, allowing residents to fully immerse themselves in the land’s tranquility.',
-                        'image' => '/assets/img/yellow-house-05.jpg',
+                        'image' => 'https://images.unsplash.com/photo-1600566752355-35792bedcfea?auto=format&fit=crop&w=1500&q=82',
                     ],
                     [
                         'position' => 5,
                         'label' => 'Material Honesty',
                         'body' => 'The exterior is built from precisely cut machine stone and finished with Ruff and Tuff, giving it a textured resilience that speaks to endurance and craft. Inside, skimmed walls and double-layered paint create a refined, velvety contrast to the rugged shell.',
-                        'image' => '/assets/img/yellow-house-06.jpg',
+                        'image' => 'https://images.unsplash.com/photo-1600585154526-990dced4db0d?auto=format&fit=crop&w=1500&q=82',
                     ],
                 ],
                 'credits' => [
@@ -326,6 +331,23 @@ class DatabaseSeeder extends Seeder
             $chapters = $data['chapters'];
             $credits = $data['credits'];
             unset($data['chapters'], $data['credits']);
+
+            $existingProject = Project::where('slug', $data['slug'])->with('chapters')->first();
+            if ($existingProject) {
+                foreach (['hero_image', 'overview_image', 'spatial_image', 'material_image', 'delivery_image'] as $field) {
+                    $data[$field] = $this->keepExistingUpload($existingProject->{$field}, $data[$field] ?? null);
+                }
+
+                $existingChapters = $existingProject->chapters->keyBy('position');
+                $chapters = collect($chapters)
+                    ->map(function (array $chapter) use ($existingChapters) {
+                        $existingChapter = $existingChapters->get($chapter['position']);
+                        $chapter['image'] = $this->keepExistingUpload($existingChapter?->image, $chapter['image'] ?? null);
+
+                        return $chapter;
+                    })
+                    ->all();
+            }
 
             $project = Project::updateOrCreate(['slug' => $data['slug']], $data);
             $project->chapters()->delete();
