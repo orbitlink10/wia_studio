@@ -652,6 +652,11 @@ const openInlineProject = (row) => {
             panel.classList.add("is-open");
             inlineGlide?.glideTo(0, true);
             scrollToElement(panel, prefersReducedMotion ? "auto" : "smooth");
+            panel.scrollIntoView({
+                behavior: prefersReducedMotion ? "auto" : "smooth",
+                block: "nearest",
+                inline: "center",
+            });
         });
     }, 80);
 };

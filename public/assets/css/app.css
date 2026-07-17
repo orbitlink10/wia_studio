@@ -5278,15 +5278,34 @@ body.pl-detail-active {
     }
 
     .pl {
-        width: 100%;
+        width: 100vw;
         min-width: 0;
+        min-height: calc(100svh - 56px);
+        display: flex;
+        align-items: center;
+        gap: 18px;
+        overflow-x: auto;
+        overflow-y: hidden;
+        padding: 22px 20px 34px;
+        scroll-snap-type: x proximity;
+        overscroll-behavior-inline: contain;
+        -webkit-overflow-scrolling: touch;
+        scrollbar-width: none;
+        touch-action: pan-x;
+    }
+
+    .pl::-webkit-scrollbar {
+        display: none;
     }
 
     .pl-row {
         grid-template-columns: 1fr;
         gap: 14px;
-        width: 100%;
-        padding: 28px 20px;
+        flex: 0 0 78vw;
+        width: 78vw;
+        max-height: none;
+        padding: 0;
+        scroll-snap-align: center;
     }
 
     .pl-info {
@@ -5312,11 +5331,27 @@ body.pl-detail-active {
         width: 100%;
     }
 
+    .pl-img img {
+        aspect-ratio: 4 / 5;
+    }
+
+    .pl-row:nth-child(even) .pl-img img {
+        aspect-ratio: 4 / 5;
+    }
+
+    .pl-row.is-expanded {
+        flex-basis: 0;
+        width: 0;
+        min-width: 0;
+        margin: 0;
+    }
+
     .pl-detail {
-        width: 100%;
-        height: auto;
+        flex: 0 0 calc(100vw - 40px);
+        width: calc(100vw - 40px);
+        height: min(680px, calc(100svh - 106px));
         min-height: 0;
-        margin: 0 0 32px;
+        margin: 0;
         padding: 24px 0;
     }
 
@@ -5347,20 +5382,23 @@ body.pl-detail-active {
     }
 
     .pl-detail-main {
-        height: auto;
-        display: grid;
-        overflow: visible;
+        height: 100%;
+        display: flex;
+        overflow-x: auto;
+        overflow-y: hidden;
         padding: 0;
+        touch-action: pan-x;
     }
 
     .pl-detail-panel,
     .pl-detail-panel-hero,
     .pl-detail-story {
-        width: 100%;
-        min-width: 0;
+        flex: 0 0 calc(100vw - 40px);
+        width: calc(100vw - 40px);
+        min-width: calc(100vw - 40px);
         grid-template-columns: 1fr;
         gap: 16px;
-        height: auto;
+        height: 100%;
         padding-inline: 20px;
     }
 
