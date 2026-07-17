@@ -6,7 +6,6 @@
     <title>@yield('title', 'WIA Studio')</title>
     <meta name="description" content="WIA Studio is a Nairobi-based architecture, interior design, and construction documentation practice.">
     <link rel="stylesheet" href="{{ asset('assets/css/app.css') }}?v={{ filemtime(public_path('assets/css/app.css')) }}">
-    @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
 <body class="@yield('body_class')">
     <header class="site-header big-header" id="siteHeader">
