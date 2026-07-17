@@ -54,6 +54,20 @@ if (! function_exists('wia_store_uploaded_image')) {
         $filename = $name.'-'.Str::random(8).'.'.$file->getClientOriginalExtension();
         $file->move($directory, $filename);
 
+        $source = $directory.DIRECTORY_SEPARATOR.$filename;
+        $publicHtmlDirectory = dirname(base_path()).DIRECTORY_SEPARATOR.'public_html'.DIRECTORY_SEPARATOR.'assets'.DIRECTORY_SEPARATOR.'uploads'.DIRECTORY_SEPARATOR.'projects';
+
+        if (is_dir(dirname(base_path()).DIRECTORY_SEPARATOR.'public_html')) {
+            if (! is_dir($publicHtmlDirectory)) {
+                mkdir($publicHtmlDirectory, 0755, true);
+            }
+
+            $target = $publicHtmlDirectory.DIRECTORY_SEPARATOR.$filename;
+            if (realpath($directory) !== realpath($publicHtmlDirectory)) {
+                copy($source, $target);
+            }
+        }
+
         return '/assets/uploads/projects/'.$filename;
     }
 }
