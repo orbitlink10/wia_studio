@@ -22,6 +22,10 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        if ($this->app->runningInConsole()) {
+            return;
+        }
+
         if (Schema::hasTable('studio_profiles')) {
             View::share('siteProfile', StudioProfile::current());
         }
