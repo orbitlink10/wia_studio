@@ -50,6 +50,18 @@ document.addEventListener("keydown", (event) => {
     if (event.key === "Escape") closeSideMenu();
 });
 
+if (document.body.classList.contains("wia-index-page") && header && !window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+    const peekBrand = () => {
+        if (sideMenuDropdown?.open) return;
+
+        header.classList.add("is-brand-peek");
+        window.setTimeout(() => header.classList.remove("is-brand-peek"), 1250);
+    };
+
+    window.setTimeout(peekBrand, 2600);
+    window.setInterval(peekBrand, 6800);
+}
+
 const categoryPanel = document.getElementById("categoryPanel");
 const categoryTriggers = document.querySelectorAll("[data-category-trigger]");
 const categoryPanels = document.querySelectorAll("[data-panel]");
