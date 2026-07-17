@@ -3753,8 +3753,8 @@ form button {
     position: fixed;
     inset: 0;
     z-index: 1000;
-    background: #fff;
-    color: #111;
+    background: #000;
+    color: #fff;
     will-change: opacity, visibility;
     transition:
         opacity 0.7s cubic-bezier(0.77, 0, 0.175, 1),
@@ -3776,13 +3776,39 @@ form button {
     transition:
         transform 1.05s cubic-bezier(0.77, 0, 0.175, 1),
         font-size 1.05s cubic-bezier(0.77, 0, 0.175, 1),
-        letter-spacing 1.05s cubic-bezier(0.77, 0, 0.175, 1);
+        letter-spacing 1.05s cubic-bezier(0.77, 0, 0.175, 1),
+        color 0.36s ease 0.48s;
+}
+
+.wia-splash span::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 1px;
+    width: 26px;
+    height: 2px;
+    background: #fff;
+    box-shadow:
+        0 7px 0 #fff,
+        0 14px 0 #fff;
+    opacity: 0;
+    transform: scaleX(0.4);
+    transform-origin: left center;
+    transition:
+        opacity 0.28s ease 0.5s,
+        transform 0.42s cubic-bezier(0.77, 0, 0.175, 1) 0.5s;
 }
 
 .wia-splash.is-settling span {
+    color: transparent;
     font-size: 18px;
     letter-spacing: 0.04em;
     transform: translate(calc(-50vw + var(--wia-intro-x)), calc(-50vh + var(--wia-intro-y)));
+}
+
+.wia-splash.is-settling span::after {
+    opacity: 1;
+    transform: scaleX(1);
 }
 
 .wia-splash.is-hidden {
@@ -3812,8 +3838,8 @@ form button {
 .wia-index-page .side-menu-dropdown {
     width: 26px;
     flex: 0 0 26px;
-    order: 2;
-    margin-left: 14px;
+    order: 1;
+    margin-left: 0;
 }
 
 .wia-index-page .menu-toggle {
@@ -3850,9 +3876,9 @@ form button {
 }
 
 .wia-index-page .big-header .brand {
-    display: flex;
+    display: none;
     min-width: 0;
-    order: 1;
+    order: 2;
     margin-left: 0;
     margin-right: auto;
 }
