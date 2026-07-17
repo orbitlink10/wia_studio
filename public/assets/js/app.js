@@ -95,6 +95,7 @@ const projectSubnav = document.getElementById("subnav");
 const projectEmpty = document.getElementById("plEmpty");
 let activeProjectDetail = null;
 let savedScrollY = 0;
+let projectCanvasMovedAt = 0;
 
 const lockPageScroll = () => {
     savedScrollY = window.scrollY;
@@ -235,51 +236,98 @@ const glideProjectCanvas = () => {
 
     let targetX = window.scrollX;
     let targetY = window.scrollY;
+    let velocityX = 0;
+    let velocityY = 0;
     let frame = null;
+    let pointer = null;
 
     const maxX = () => Math.max(0, document.documentElement.scrollWidth - window.innerWidth);
     const maxY = () => Math.max(0, document.documentElement.scrollHeight - window.innerHeight);
     const clamp = (value, max) => Math.max(0, Math.min(max, value));
+    const stopAtBounds = () => {
+        if ((targetX <= 0 && velocityX < 0) || (targetX >= maxX() && velocityX > 0)) velocityX = 0;
+        if ((targetY <= 0 && velocityY < 0) || (targetY >= maxY() && velocityY > 0)) velocityY = 0;
+    };
 
     const animate = () => {
+        targetX = clamp(targetX + velocityX, maxX());
+        targetY = clamp(targetY + velocityY, maxY());
+        stopAtBounds();
+
+        velocityX *= 0.88;
+        velocityY *= 0.88;
+
         const dx = targetX - window.scrollX;
         const dy = targetY - window.scrollY;
 
-        if (Math.abs(dx) < 0.35 && Math.abs(dy) < 0.35) {
+        if (Math.abs(dx) < 0.35 && Math.abs(dy) < 0.35 && Math.abs(velocityX) < 0.08 && Math.abs(velocityY) < 0.08) {
             window.scrollTo(targetX, targetY);
+            velocityX = 0;
+            velocityY = 0;
             frame = null;
             return;
         }
 
         window.scrollTo(
-            window.scrollX + dx * 0.13,
-            window.scrollY + dy * 0.13,
+            window.scrollX + dx * 0.18,
+            window.scrollY + dy * 0.18,
         );
         frame = requestAnimationFrame(animate);
     };
 
-    const glideTo = (x, y) => {
-        targetX = clamp(x, maxX());
-        targetY = clamp(y, maxY());
+    const push = (x, y) => {
+        velocityX += x;
+        velocityY += y;
         if (!frame) frame = requestAnimationFrame(animate);
     };
 
     window.addEventListener("wheel", (event) => {
         if (activeProjectDetail || event.target.closest("input, textarea, select, button")) return;
 
-        const horizontalIntent = Math.abs(event.deltaX) > Math.abs(event.deltaY) * 0.35;
         const shiftedVertical = event.shiftKey && Math.abs(event.deltaY) > 0;
-        const nextX = targetX + event.deltaX + (shiftedVertical ? event.deltaY : 0);
-        const nextY = targetY + (shiftedVertical ? 0 : event.deltaY);
-        const canMoveX = horizontalIntent || shiftedVertical || Math.abs(event.deltaX) > 0;
-        const clampedX = clamp(nextX, maxX());
-        const clampedY = clamp(nextY, maxY());
+        const x = event.deltaX + (shiftedVertical ? event.deltaY : 0);
+        const y = shiftedVertical ? 0 : event.deltaY;
 
-        if (!canMoveX && clampedY === targetY) return;
+        if (!x && !y) return;
 
         event.preventDefault();
-        glideTo(clampedX, clampedY);
+        push(x * 0.42, y * 0.42);
     }, { passive: false });
+
+    window.addEventListener("pointerdown", (event) => {
+        if (event.button !== 0 || activeProjectDetail || event.target.closest("a, button, input, textarea, select, summary")) return;
+
+        pointer = {
+            id: event.pointerId,
+            x: event.clientX,
+            y: event.clientY,
+        };
+        document.body.classList.add("is-project-panning");
+        canvas.setPointerCapture?.(event.pointerId);
+    });
+
+    window.addEventListener("pointermove", (event) => {
+        if (!pointer || pointer.id !== event.pointerId) return;
+
+        const dx = pointer.x - event.clientX;
+        const dy = pointer.y - event.clientY;
+        pointer.x = event.clientX;
+        pointer.y = event.clientY;
+        if (Math.abs(dx) + Math.abs(dy) > 2) projectCanvasMovedAt = Date.now();
+        event.preventDefault();
+        push(dx * 0.95, dy * 0.95);
+    }, { passive: false });
+
+    const stopPointer = (event) => {
+        if (!pointer || pointer.id !== event.pointerId) return;
+
+        pointer = null;
+        document.body.classList.remove("is-project-panning");
+        canvas.releasePointerCapture?.(event.pointerId);
+    };
+
+    window.addEventListener("pointerup", stopPointer);
+    window.addEventListener("pointercancel", stopPointer);
 
     window.addEventListener("scroll", () => {
         if (!frame) {
@@ -709,6 +757,11 @@ const openInlineProject = (row) => {
 
 document.querySelectorAll("[data-pl-expand]").forEach((row) => {
     row.addEventListener("click", (event) => {
+        if (Date.now() - projectCanvasMovedAt < 180) {
+            event.preventDefault();
+            return;
+        }
+
         event.preventDefault();
         openInlineProject(row);
     });
