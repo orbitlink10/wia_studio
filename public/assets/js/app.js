@@ -229,6 +229,73 @@ const optimizedImage = (url = "", width = 1400) => {
 
 const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
+const glideProjectCanvas = () => {
+    const canvas = document.querySelector(".pl");
+    if (!canvas || window.innerWidth <= 760 || prefersReducedMotion) return;
+
+    let targetX = window.scrollX;
+    let targetY = window.scrollY;
+    let frame = null;
+
+    const maxX = () => Math.max(0, document.documentElement.scrollWidth - window.innerWidth);
+    const maxY = () => Math.max(0, document.documentElement.scrollHeight - window.innerHeight);
+    const clamp = (value, max) => Math.max(0, Math.min(max, value));
+
+    const animate = () => {
+        const dx = targetX - window.scrollX;
+        const dy = targetY - window.scrollY;
+
+        if (Math.abs(dx) < 0.35 && Math.abs(dy) < 0.35) {
+            window.scrollTo(targetX, targetY);
+            frame = null;
+            return;
+        }
+
+        window.scrollTo(
+            window.scrollX + dx * 0.13,
+            window.scrollY + dy * 0.13,
+        );
+        frame = requestAnimationFrame(animate);
+    };
+
+    const glideTo = (x, y) => {
+        targetX = clamp(x, maxX());
+        targetY = clamp(y, maxY());
+        if (!frame) frame = requestAnimationFrame(animate);
+    };
+
+    window.addEventListener("wheel", (event) => {
+        if (activeProjectDetail || event.target.closest("input, textarea, select, button")) return;
+
+        const horizontalIntent = Math.abs(event.deltaX) > Math.abs(event.deltaY) * 0.35;
+        const shiftedVertical = event.shiftKey && Math.abs(event.deltaY) > 0;
+        const nextX = targetX + event.deltaX + (shiftedVertical ? event.deltaY : 0);
+        const nextY = targetY + (shiftedVertical ? 0 : event.deltaY);
+        const canMoveX = horizontalIntent || shiftedVertical || Math.abs(event.deltaX) > 0;
+        const clampedX = clamp(nextX, maxX());
+        const clampedY = clamp(nextY, maxY());
+
+        if (!canMoveX && clampedY === targetY) return;
+
+        event.preventDefault();
+        glideTo(clampedX, clampedY);
+    }, { passive: false });
+
+    window.addEventListener("scroll", () => {
+        if (!frame) {
+            targetX = window.scrollX;
+            targetY = window.scrollY;
+        }
+    }, { passive: true });
+
+    window.addEventListener("resize", () => {
+        targetX = clamp(window.scrollX, maxX());
+        targetY = clamp(window.scrollY, maxY());
+    });
+};
+
+glideProjectCanvas();
+
 const glideHorizontalTrack = (track, options = {}) => {
     const speed = options.speed || 1;
     const wheelMode = options.wheelMode || "intentional";

@@ -42,6 +42,7 @@
                 ->map(fn ($image) => wia_media_url($image))
                 ->take(4)
                 ->values();
+            $previewImages = $detailImages->pad(4, $detailImages->first());
             $detailChapters = $project->chapters
                 ->map(fn ($chapter) => [
                     'label' => $chapter->label,
@@ -84,6 +85,20 @@
             <div></div>
             <figure class="pl-img">
                 <img src="{{ wia_media_url($project->hero_image) }}" alt="{{ $project->title }}" loading="{{ $loop->iteration < 3 ? 'eager' : 'lazy' }}">
+            </figure>
+            <article class="pl-summary">
+                <p>{{ $project->summary }}</p>
+                <dl>
+                    <dt>Client</dt><dd>{{ $project->client }}</dd>
+                    <dt>Status</dt><dd>{{ $project->status }}</dd>
+                    <dt>Size</dt><dd>{{ $project->size }}</dd>
+                </dl>
+            </article>
+            <figure class="pl-side-img pl-side-img-a">
+                <img src="{{ $previewImages->get(1) }}" alt="{{ $project->title }} detail" loading="lazy">
+            </figure>
+            <figure class="pl-side-img pl-side-img-b">
+                <img src="{{ $previewImages->get(2) }}" alt="{{ $project->title }} project view" loading="lazy">
             </figure>
         </a>
     @endforeach
