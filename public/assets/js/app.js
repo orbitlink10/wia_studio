@@ -7,10 +7,14 @@ const wiaSplash = document.getElementById("wiaSplash");
 if (wiaSplash) {
     const runSplashIntro = () => {
         setTimeout(() => {
+            wiaSplash.classList.add("is-settling");
+        }, 650);
+
+        setTimeout(() => {
             wiaSplash.classList.add("is-hidden");
             document.body.classList.remove("wia-intro-active");
-            setTimeout(() => wiaSplash.remove(), 1200);
-        }, 2200);
+            setTimeout(() => wiaSplash.remove(), 900);
+        }, 1650);
     };
 
     if (document.readyState === "loading") {
