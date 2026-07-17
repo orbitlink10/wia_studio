@@ -4291,8 +4291,6 @@ body.pl-detail-active {
     background: var(--paper);
     color: #111;
     box-sizing: border-box;
-    border-top: 1px solid rgba(0, 0, 0, 0.08);
-    border-bottom: 1px solid rgba(0, 0, 0, 0.08);
     opacity: 0;
     visibility: visible;
     pointer-events: none;
