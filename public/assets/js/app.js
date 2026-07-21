@@ -253,7 +253,9 @@ const glideHorizontalTrack = (track, options = {}) => {
     let lastWheelAt = 0;
     let drag = {
         active: false,
+        mode: null,
         startX: 0,
+        startY: 0,
         startScroll: 0,
     };
 
@@ -317,17 +319,35 @@ const glideHorizontalTrack = (track, options = {}) => {
 
         drag = {
             active: true,
+            mode: event.pointerType === "mouse" ? "x" : null,
             startX: event.clientX,
+            startY: event.clientY,
             startScroll: track.scrollLeft,
         };
         if (frame) cancelAnimationFrame(frame);
         frame = null;
-        track.classList.add("is-dragging");
+        if (drag.mode === "x") track.classList.add("is-dragging");
         track.setPointerCapture?.(event.pointerId);
     });
 
     track.addEventListener("pointermove", (event) => {
         if (!drag.active) return;
+
+        if (!drag.mode) {
+            const deltaX = event.clientX - drag.startX;
+            const deltaY = event.clientY - drag.startY;
+
+            if (Math.abs(deltaY) > Math.abs(deltaX) && Math.abs(deltaY) > 6) {
+                drag.active = false;
+                track.releasePointerCapture?.(event.pointerId);
+                return;
+            }
+
+            if (Math.abs(deltaX) < 6) return;
+
+            drag.mode = "x";
+            track.classList.add("is-dragging");
+        }
 
         event.preventDefault();
         target = clamp(drag.startScroll + drag.startX - event.clientX);
@@ -338,6 +358,7 @@ const glideHorizontalTrack = (track, options = {}) => {
         if (!drag.active) return;
 
         drag.active = false;
+        drag.mode = null;
         track.classList.remove("is-dragging");
         track.releasePointerCapture?.(event.pointerId);
     };
@@ -346,6 +367,7 @@ const glideHorizontalTrack = (track, options = {}) => {
     track.addEventListener("pointercancel", stopDrag);
     track.addEventListener("lostpointercapture", () => {
         drag.active = false;
+        drag.mode = null;
         track.classList.remove("is-dragging");
     });
 
@@ -519,6 +541,7 @@ const closeInlineProject = (onClosed, { animate = true } = {}) => {
     activeProjectDetail = null;
     unbindExpandedScrollHandlers();
     trigger.classList.remove("is-expanded");
+    trigger.closest(".pl")?.classList.remove("has-open-detail");
 
     if (!animate) {
         panel.remove();
@@ -632,6 +655,7 @@ const openInlineProject = (row) => {
     `;
 
     row.classList.add("is-expanded");
+    row.closest(".pl")?.classList.add("has-open-detail");
     row.after(panel);
 
     const track = panel.querySelector("[data-inline-track]");

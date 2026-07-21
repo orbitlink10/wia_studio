@@ -67,11 +67,11 @@
         <div><strong>{{ $inquiries->count() }}</strong><span>Recent inquiries</span></div>
     </div>
 
-    <h2>About WIA Studio</h2>
+    <h2>About and contact information</h2>
     <details class="admin-editor" open>
         <summary>
-            <span>Company profile and vision</span>
-            <small>About page content</small>
+            <span>Company profile, vision, email, and phone</span>
+            <small>Shown on the client side</small>
         </summary>
         <form method="post" action="{{ route('admin.studio-profile.update') }}">
             @csrf
@@ -94,7 +94,7 @@
                 <label>Planning<textarea name="planning_text" rows="3" required>{{ old('planning_text', $studioProfile->planning_text) }}</textarea></label>
                 <label>Products<textarea name="products_text" rows="3" required>{{ old('products_text', $studioProfile->products_text) }}</textarea></label>
             </div>
-            <button type="submit">Save about content</button>
+            <button type="submit">Save studio profile</button>
         </form>
     </details>
 

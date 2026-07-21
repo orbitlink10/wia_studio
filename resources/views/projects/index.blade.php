@@ -93,4 +93,25 @@
     </p>
 </section>
 
+@php
+    $homeContactEmail = $studioProfile->contact_email ?: 'studio@wia.com';
+    $homeContactPhone = $studioProfile->phone_number ?: '+254 700 000 000';
+@endphp
+
+<section class="home-contact" id="contact">
+    <div>
+        <p class="home-contact-eyebrow">Contact</p>
+        <h2>Start a conversation with WIA Studio.</h2>
+    </div>
+    <dl>
+        <dt>Email</dt>
+        <dd><a href="mailto:{{ $homeContactEmail }}">{{ $homeContactEmail }}</a></dd>
+        <dt>Phone</dt>
+        <dd><a href="tel:{{ preg_replace('/[^0-9+]/', '', $homeContactPhone) }}">{{ $homeContactPhone }}</a></dd>
+        <dt>Studio</dt>
+        <dd>Nairobi, Kenya</dd>
+    </dl>
+    <a class="home-contact-link" href="{{ route('contact.index') }}">Contact page</a>
+</section>
+
 @endsection

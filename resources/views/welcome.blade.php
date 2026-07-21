@@ -69,8 +69,8 @@
         <h2>Let's build something remarkable.</h2>
         <p>Send a project brief, request a feasibility study, or ask for a studio introduction.</p>
         <dl>
-            <dt>Email</dt><dd><a href="mailto:hiuhu@wia.com">hiuhu@wia.com</a></dd>
-            <dt>Team</dt><dd><a href="mailto:studio@wia.com">studio@wia.com</a></dd>
+            <dt>Email</dt><dd><a href="mailto:{{ $studioProfile->contact_email ?: 'studio@wia.com' }}">{{ $studioProfile->contact_email ?: 'studio@wia.com' }}</a></dd>
+            <dt>Phone</dt><dd><a href="tel:{{ preg_replace('/[^0-9+]/', '', $studioProfile->phone_number ?: '+254700000000') }}">{{ $studioProfile->phone_number ?: '+254 700 000 000' }}</a></dd>
             <dt>Studio</dt><dd>Nairobi, Kenya</dd>
             <dt>Hours</dt><dd>Monday to Friday, 8am to 6pm</dd>
         </dl>

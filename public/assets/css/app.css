@@ -4067,8 +4067,9 @@ form button {
 .filter-bar {
     display: none;
     align-items: center;
+    justify-content: center;
     gap: 16px;
-    padding: 14px 0 14px 480px;
+    padding: 14px 36px;
     border-bottom: 1px solid rgba(0, 0, 0, 0.08);
 }
 
@@ -4138,7 +4139,7 @@ form button {
 }
 
 body.pl-detail-active {
-    overflow: hidden;
+    overflow: visible;
 }
 
 .pl {
@@ -4147,8 +4148,10 @@ body.pl-detail-active {
 
 .pl-row {
     display: grid;
-    grid-template-columns: 480px 28px 440px 1fr;
+    grid-template-columns: minmax(220px, 320px) 32px minmax(360px, 520px);
     align-items: start;
+    width: min(calc(100vw - 72px), 980px);
+    margin: 0 auto;
     padding: 48px 0;
     color: #111;
     max-height: 560px;
@@ -4391,14 +4394,16 @@ body.pl-detail-active {
     flex-direction: column;
     justify-content: center;
     align-items: stretch;
-    width: min(1320px, calc(100vw - 72px));
-    height: min(680px, calc(100vh - 132px));
-    min-height: 560px;
+    width: min(1720px, calc(100vw - 40px));
+    height: min(760px, calc(100vh - 104px));
+    min-height: 620px;
     margin: 28px auto 72px;
     padding: clamp(20px, 3vw, 36px);
     background: var(--paper);
     color: #111;
     box-sizing: border-box;
+    overflow-y: visible;
+    overscroll-behavior: auto;
     opacity: 0;
     visibility: visible;
     pointer-events: none;
@@ -4567,23 +4572,23 @@ body.pl-detail-active {
 }
 
 .pl-detail-panel {
-    flex: 0 0 min(1060px, calc(100vw - 104px));
-    width: min(1060px, calc(100vw - 104px));
+    flex: 0 0 min(1500px, calc(100vw - 72px));
+    width: min(1500px, calc(100vw - 72px));
     max-width: none;
     height: 100%;
     display: flex;
     align-items: center;
     justify-content: center;
-    padding: 0 clamp(18px, 3vw, 42px);
+    padding: 0 clamp(14px, 2vw, 32px);
     box-sizing: border-box;
 }
 
 .pl-detail-panel-hero {
-    width: min(1060px, 100%);
+    width: min(1500px, 100%);
     height: 100%;
     display: grid;
-    grid-template-columns: minmax(190px, 230px) minmax(420px, 1fr) minmax(220px, 300px);
-    gap: clamp(24px, 3vw, 42px);
+    grid-template-columns: minmax(180px, 240px) minmax(720px, 1.65fr) minmax(220px, 340px);
+    gap: clamp(24px, 2.4vw, 40px);
     align-items: center;
     margin: 0 auto;
 }
@@ -4608,11 +4613,11 @@ body.pl-detail-active {
 }
 
 .pl-detail-story {
-    width: min(920px, 100%);
+    width: min(1360px, 100%);
     height: 100%;
     display: grid;
-    grid-template-columns: minmax(220px, 300px) minmax(400px, 1fr);
-    gap: clamp(24px, 3vw, 42px);
+    grid-template-columns: minmax(240px, 360px) minmax(720px, 1fr);
+    gap: clamp(24px, 2.4vw, 40px);
     align-items: center;
     margin: 0 auto;
 }
@@ -4905,7 +4910,8 @@ body.pl-detail-active {
 
 .pl-empty {
     display: none;
-    padding: 80px 0 80px 480px;
+    padding: 80px 36px;
+    text-align: center;
     color: var(--stone);
     font-size: 12px;
     letter-spacing: 0.08em;
@@ -4913,6 +4919,67 @@ body.pl-detail-active {
 
 .pl-empty.visible {
     display: block;
+}
+
+.home-contact {
+    display: grid;
+    grid-template-columns: minmax(240px, 1fr) minmax(280px, 1fr) auto;
+    align-items: center;
+    gap: 28px;
+    padding: 44px 36px;
+    background: var(--charcoal);
+    color: #fff;
+    border-top: 1px solid rgba(157, 191, 174, 0.18);
+}
+
+.home-contact h2 {
+    margin: 8px 0 0;
+    font-family: "Cormorant Garamond", Georgia, serif;
+    font-size: clamp(28px, 3.4vw, 48px);
+    font-weight: 300;
+    line-height: 1;
+}
+
+.home-contact-eyebrow,
+.home-contact dt {
+    margin: 0;
+    color: rgba(255, 255, 255, 0.34);
+    font-size: 9px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+}
+
+.home-contact dl {
+    display: grid;
+    grid-template-columns: 58px minmax(0, 1fr);
+    gap: 10px 16px;
+    margin: 0;
+}
+
+.home-contact dd {
+    margin: 0;
+    color: rgba(255, 255, 255, 0.72);
+    font-size: 13px;
+    overflow-wrap: anywhere;
+}
+
+.home-contact a:hover {
+    color: var(--teal-bright);
+}
+
+.home-contact-link {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 38px;
+    border: 1px solid rgba(157, 191, 174, 0.45);
+    padding: 0 18px;
+    color: rgba(255, 255, 255, 0.74);
+    font-size: 9.5px;
+    font-weight: 500;
+    letter-spacing: 0.13em;
+    text-transform: uppercase;
+    white-space: nowrap;
 }
 
 .band {
@@ -5150,6 +5217,7 @@ body.pl-detail-active {
 
     .pl-row {
         grid-template-columns: 220px 20px minmax(0, 1fr);
+        width: min(calc(100vw - 56px), 860px);
         padding: 40px 28px;
     }
 
@@ -5158,27 +5226,29 @@ body.pl-detail-active {
     }
 
     .pl-detail {
-        width: calc(100vw - 56px);
-        min-height: 520px;
-        height: min(620px, calc(100vh - 112px));
-        padding: 24px;
+        width: calc(100vw - 32px);
+        min-height: min(520px, calc(100svh - 112px));
+        height: auto;
+        max-height: none;
+        padding: 24px 16px;
     }
 
     .pl-detail-story {
-        width: min(920px, 100%);
-        grid-template-columns: minmax(210px, 280px) minmax(360px, 1fr);
+        width: min(1040px, 100%);
+        grid-template-columns: minmax(190px, 250px) minmax(480px, 1fr);
         gap: 24px;
     }
 
     .pl-detail-panel-hero {
-        width: min(920px, 100%);
-        grid-template-columns: minmax(170px, 200px) minmax(330px, 1fr) minmax(200px, 260px);
-        gap: 28px;
+        width: min(1040px, 100%);
+        grid-template-columns: minmax(150px, 190px) minmax(500px, 1.45fr) minmax(190px, 240px);
+        gap: 22px;
     }
 
     .filter-bar,
     .pl-empty {
         padding-left: 28px;
+        padding-right: 28px;
     }
 
     .band,
@@ -5201,6 +5271,17 @@ body.pl-detail-active {
     .band,
     .contact {
         grid-template-columns: 1fr;
+    }
+
+    .home-contact {
+        grid-template-columns: 1fr 1fr;
+        align-items: start;
+        padding-left: 28px;
+        padding-right: 28px;
+    }
+
+    .home-contact-link {
+        width: max-content;
     }
 
     .svc-grid {
@@ -5286,12 +5367,18 @@ body.pl-detail-active {
         gap: 18px;
         overflow-x: auto;
         overflow-y: hidden;
-        padding: 22px 20px 34px;
+        padding: 22px 11vw 34px;
         scroll-snap-type: x proximity;
+        scroll-padding-inline: 11vw;
         overscroll-behavior-inline: contain;
         -webkit-overflow-scrolling: touch;
         scrollbar-width: none;
         touch-action: pan-x;
+    }
+
+    .pl.has-open-detail {
+        overflow-y: visible;
+        touch-action: pan-x pan-y;
     }
 
     .pl::-webkit-scrollbar {
@@ -5347,11 +5434,11 @@ body.pl-detail-active {
     }
 
     .pl-detail {
-        flex: 0 0 calc(100vw - 40px);
+        flex: none;
         width: calc(100vw - 40px);
-        height: min(680px, calc(100svh - 106px));
+        height: auto;
         min-height: 0;
-        margin: 0;
+        margin: 22px auto 34px;
         padding: 24px 0;
     }
 
@@ -5382,12 +5469,13 @@ body.pl-detail-active {
     }
 
     .pl-detail-main {
-        height: 100%;
+        height: auto;
+        min-height: min(640px, calc(100svh - 128px));
         display: flex;
         overflow-x: auto;
         overflow-y: hidden;
         padding: 0;
-        touch-action: pan-x;
+        touch-action: pan-x pan-y;
     }
 
     .pl-detail-panel,
@@ -5398,7 +5486,8 @@ body.pl-detail-active {
         min-width: calc(100vw - 40px);
         grid-template-columns: 1fr;
         gap: 16px;
-        height: 100%;
+        height: auto;
+        min-height: min(640px, calc(100svh - 128px));
         padding-inline: 20px;
     }
 
@@ -5486,13 +5575,19 @@ body.pl-detail-active {
     .filter-bar,
     .pl-empty {
         padding-left: 20px;
+        padding-right: 20px;
     }
 
     .band,
     .services,
-    .contact {
+    .contact,
+    .home-contact {
         padding-left: 20px;
         padding-right: 20px;
+    }
+
+    .home-contact {
+        grid-template-columns: 1fr;
     }
 
     .id-left {

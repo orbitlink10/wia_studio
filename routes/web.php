@@ -210,7 +210,7 @@ Route::patch('/admin/studio-profile', function (Request $request) {
 
     StudioProfile::currentForUpdate()->update($validated);
 
-    return redirect()->route('admin.dashboard')->with('status', 'About page content updated.');
+    return redirect()->route('admin.dashboard')->with('status', 'Studio profile and contact information updated.');
 })->middleware('auth')->name('admin.studio-profile.update');
 
 Route::post('/admin/news', function (Request $request) {
