@@ -49,6 +49,12 @@
                     'image' => wia_media_url($chapter->image),
                 ])
                 ->values();
+            $detailCredits = $project->credits
+                ->map(fn ($credit) => [
+                    'role' => $credit->role,
+                    'name' => $credit->name,
+                ])
+                ->values();
         @endphp
 
         <a
@@ -72,6 +78,7 @@
             data-delivery-image="{{ wia_media_url($project->delivery_image) }}"
             data-detail-images='@json($detailImages, JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP | JSON_HEX_TAG)'
             data-detail-chapters='@json($detailChapters, JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP | JSON_HEX_TAG)'
+            data-detail-credits='@json($detailCredits, JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP | JSON_HEX_TAG)'
         >
             <div class="pl-info">
                 <span class="pl-mark">
@@ -83,7 +90,7 @@
             </div>
             <div></div>
             <figure class="pl-img">
-                <img src="{{ wia_media_url($project->hero_image) }}" alt="{{ $project->title }}" loading="{{ $loop->iteration < 3 ? 'eager' : 'lazy' }}">
+                <img src="{{ wia_media_url($project->hero_image) }}" alt="{{ $project->title }}" width="1600" height="900" loading="{{ $loop->iteration < 3 ? 'eager' : 'lazy' }}">
             </figure>
         </a>
     @endforeach
@@ -94,24 +101,65 @@
 </section>
 
 @php
-    $homeContactEmail = $studioProfile->contact_email ?: 'studio@wia.com';
-    $homeContactPhone = $studioProfile->phone_number ?: '+254 700 000 000';
+    $footerGroups = [
+        'Email' => $studioProfile->footer_emails ?: 'Studio: '.($studioProfile->contact_email ?: 'studio@wia.com'),
+        'Office' => $studioProfile->footer_offices ?: 'Nairobi: '.($studioProfile->phone_number ?: '+254 700 000 000'),
+        'Social' => $studioProfile->footer_socials ?: "Instagram: https://instagram.com\nLinkedIn: https://linkedin.com",
+        'Legal' => $studioProfile->footer_legal ?: "Privacy\nTerms",
+    ];
+
+    $footerItems = function (?string $text) {
+        return collect(preg_split('/\R+/', (string) $text))
+            ->map(fn ($line) => trim($line))
+            ->filter()
+            ->map(function ($line) {
+                [$label, $value] = str_contains($line, ':')
+                    ? array_map('trim', explode(':', $line, 2))
+                    : [$line, $line];
+                $href = null;
+
+                if (filter_var($value, FILTER_VALIDATE_EMAIL)) {
+                    $href = 'mailto:'.$value;
+                } elseif (str_starts_with($value, 'http://') || str_starts_with($value, 'https://')) {
+                    $href = $value;
+                } elseif (preg_match('/^\+?[0-9\s().-]{7,}$/', $value)) {
+                    $href = 'tel:'.preg_replace('/[^0-9+]/', '', $value);
+                }
+
+                return compact('label', 'value', 'href');
+            })
+            ->values();
+    };
 @endphp
 
-<section class="home-contact" id="contact">
-    <div>
-        <p class="home-contact-eyebrow">Contact</p>
-        <h2>Start a conversation with WIA Studio.</h2>
-    </div>
-    <dl>
-        <dt>Email</dt>
-        <dd><a href="mailto:{{ $homeContactEmail }}">{{ $homeContactEmail }}</a></dd>
-        <dt>Phone</dt>
-        <dd><a href="tel:{{ preg_replace('/[^0-9+]/', '', $homeContactPhone) }}">{{ $homeContactPhone }}</a></dd>
-        <dt>Studio</dt>
-        <dd>Nairobi, Kenya</dd>
-    </dl>
-    <a class="home-contact-link" href="{{ route('contact.index') }}">Contact page</a>
+<section class="home-contact-drawer" id="contact" aria-label="Contact information">
+    @foreach ($footerGroups as $label => $lines)
+        <details class="home-contact-group">
+            <summary>{{ strtoupper($label) }} <span>+</span></summary>
+            <div>
+                @foreach ($footerItems($lines) as $item)
+                    @if ($item['href'])
+                        <a href="{{ $item['href'] }}" @if (str_starts_with($item['href'], 'http')) target="_blank" rel="noopener" @endif>
+                            <span>{{ $item['label'] }}</span>
+                            <strong>{{ $item['value'] }}</strong>
+                        </a>
+                    @else
+                        <p><span>{{ $item['label'] }}</span></p>
+                    @endif
+                @endforeach
+            </div>
+        </details>
+    @endforeach
 </section>
+
+<a
+    class="whatsapp-float"
+    href="https://wa.me/254716097766"
+    target="_blank"
+    rel="noopener"
+    aria-label="Message WIA Studio on WhatsApp"
+>
+    <img src="{{ asset('assets/img/whatsapp-logo.jpg') }}" alt="">
+</a>
 
 @endsection

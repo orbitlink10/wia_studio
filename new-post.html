@@ -1,0 +1,901 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, minimal-ui">
+        <title>OrbitInternet Kenya</title>
+    <meta name="description" content="Starlink Kenya delivers fast, reliable satellite internet with flexible packages, equipment options, and monthly subscriptions. Enjoy seamless connectivity">
+    <meta name="robots" content="noindex,nofollow">
+        <link rel="icon" type="image/png" sizes="32x32" href="https://spacelinkkenya.co.ke/storage/uploads/images/ChatGPT Image Jul 11, 2025, 10_09_46 AM-1752217871.png">
+
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap">
+    <link rel="stylesheet" href="https://orbitinternetkenya.co.ke/assets/admin/plugins/fontawesome-free/css/all.min.css">
+    <link rel="stylesheet" href="https://orbitinternetkenya.co.ke/assets/admin/plugins/select2/css/select2.min.css">
+    <link rel="stylesheet" href="https://orbitinternetkenya.co.ke/assets/admin/plugins/select2-bootstrap4-theme/select2-bootstrap4.min.css">
+    <link rel="stylesheet" href="https://orbitinternetkenya.co.ke/assets/admin/plugins/tempusdominus-bootstrap-4/css/tempusdominus-bootstrap-4.min.css">
+    <link rel="stylesheet" href="https://orbitinternetkenya.co.ke/assets/admin/dist/css/adminlte.min.css">
+    <link rel="stylesheet" href="https://orbitinternetkenya.co.ke/assets/admin/css/style.css">
+
+    <style>
+        :root {
+            --admin-bg: #eef4ff;
+            --admin-sidebar: #eef4ff;
+            --admin-panel: rgba(255, 255, 255, 0.82);
+            --admin-card: #ffffff;
+            --admin-text: #183153;
+            --admin-muted: #7a8ea8;
+            --admin-border: rgba(184, 199, 222, 0.62);
+            --admin-accent: #2f6df6;
+            --admin-accent-deep: #1748b6;
+            --admin-accent-soft: #e9f0ff;
+            --admin-shadow: 0 28px 60px rgba(31, 54, 102, 0.12);
+            --admin-sidebar-width: 336px;
+            --admin-radius: 30px;
+        }
+
+        html, body {
+            min-height: 100%;
+            overflow-x: hidden;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background:
+                radial-gradient(circle at top left, rgba(47, 109, 246, 0.16), transparent 25%),
+                radial-gradient(circle at right center, rgba(84, 125, 255, 0.12), transparent 18%),
+                linear-gradient(180deg, #f6f9ff 0%, #eef4ff 100%);
+            color: var(--admin-text);
+            overflow-x: hidden;
+        }
+
+        .wrapper {
+            min-height: 100vh;
+            background: transparent;
+            overflow-x: hidden;
+        }
+
+        .main-sidebar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            bottom: 0;
+            display: flex;
+            flex-direction: column;
+            width: var(--admin-sidebar-width);
+            background: linear-gradient(180deg, #f4f8ff 0%, #ebf2ff 52%, #e4edff 100%);
+            backdrop-filter: blur(18px);
+            border-right: 1px solid rgba(219, 229, 243, 0.92);
+            box-shadow: 18px 0 42px rgba(31, 54, 102, 0.08);
+            z-index: 1040;
+            padding: 18px 16px 22px;
+            overflow: hidden;
+        }
+
+        .main-sidebar::before {
+            content: "";
+            position: absolute;
+            inset: 0;
+            background:
+                radial-gradient(circle at 16% 12%, rgba(60, 120, 246, 0.16), transparent 22%),
+                radial-gradient(circle at 82% 22%, rgba(88, 146, 255, 0.14), transparent 18%),
+                radial-gradient(circle at 24% 82%, rgba(158, 191, 255, 0.12), transparent 22%);
+            pointer-events: none;
+        }
+
+        .sidebar {
+            flex: 1 1 auto;
+            height: 100%;
+            min-height: 0;
+            overflow-y: auto;
+            padding-right: 6px;
+            position: relative;
+            z-index: 1;
+            background: transparent;
+        }
+
+        .sidebar::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .sidebar::-webkit-scrollbar-thumb {
+            background: rgba(90, 117, 163, 0.24);
+            border-radius: 999px;
+        }
+
+        .sidebar-brand-card {
+            background: #ffffff;
+            border: 1px solid rgba(218, 228, 243, 0.88);
+            border-radius: 28px;
+            padding: 18px 22px;
+            box-shadow: 0 14px 28px rgba(43, 68, 120, 0.08);
+            text-align: center;
+        }
+
+        .sidebar-brand-card a {
+            text-decoration: none;
+            color: inherit;
+            display: block;
+        }
+
+        .sidebar-brand-title {
+            font-size: 1.7rem;
+            font-weight: 600;
+            line-height: 1.15;
+            letter-spacing: -0.04em;
+            margin: 0;
+        }
+
+        .sidebar-menu-shell {
+            padding-bottom: 28px;
+            margin-top: 22px;
+        }
+
+        .nav-sidebar {
+            gap: 4px;
+        }
+
+        .nav-sidebar .nav-header {
+            margin: 22px 0 12px;
+            padding: 0 14px;
+            color: #9aa9bf;
+            font-size: 0.72rem;
+            font-weight: 600;
+            letter-spacing: 0.24em;
+            text-transform: uppercase;
+        }
+
+        .nav-sidebar .nav-item {
+            margin-bottom: 8px;
+        }
+
+        .nav-sidebar .nav-link {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            padding: 14px 14px;
+            border-radius: 22px;
+            color: #35527e;
+            transition: background 0.18s ease, box-shadow 0.18s ease, transform 0.18s ease, color 0.18s ease;
+        }
+
+        .nav-sidebar .nav-link:hover {
+            background: rgba(245, 249, 255, 0.96);
+            box-shadow: inset 0 0 0 1px rgba(217, 228, 246, 0.9);
+            color: #183153;
+        }
+
+        .nav-sidebar .nav-link.active {
+            background: linear-gradient(135deg, #3c78f6 0%, #2f63e0 100%);
+            box-shadow: 0 18px 34px rgba(47, 109, 246, 0.24);
+            color: #ffffff;
+        }
+
+        .nav-sidebar .nav-link p {
+            margin: 0;
+            font-size: 0.9rem;
+            font-weight: 500;
+            line-height: 1.35;
+        }
+
+        .nav-sidebar .nav-link .nav-icon {
+            margin: 0;
+            width: auto;
+            font-size: 1.1rem;
+        }
+
+        .nav-icon-wrap {
+            width: 52px;
+            height: 52px;
+            border-radius: 16px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            background: #edf2f9;
+            color: #6f84a5;
+            flex-shrink: 0;
+            box-shadow: inset 0 0 0 1px rgba(220, 228, 239, 0.8);
+        }
+
+        .nav-sidebar .nav-link.active .nav-icon-wrap {
+            background: rgba(255, 255, 255, 0.16);
+            color: #ffffff;
+            box-shadow: none;
+        }
+
+        .admin-main {
+            margin-left: var(--admin-sidebar-width);
+            padding: 24px;
+            min-height: 100vh;
+            min-width: 0;
+        }
+
+        .admin-flash {
+            margin-bottom: 16px;
+        }
+
+        .content-wrapper {
+            margin-left: 0 !important;
+            min-height: auto !important;
+            max-width: 100%;
+            background: var(--admin-panel);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(215, 225, 241, 0.92);
+            border-radius: calc(var(--admin-radius) + 4px);
+            box-shadow: var(--admin-shadow);
+            overflow: hidden;
+            padding-bottom: 26px;
+        }
+
+        .content-header {
+            padding: 26px 30px 0;
+        }
+
+        .content {
+            padding: 0 30px 10px;
+        }
+
+        .content-header h1,
+        .content-header .h1 {
+            margin: 0;
+            color: #102a53;
+            font-size: clamp(2rem, 3vw, 2.75rem);
+            font-weight: 700;
+            letter-spacing: -0.04em;
+        }
+
+        .content-header .breadcrumb {
+            background: transparent;
+            padding: 0;
+            margin: 10px 0 0;
+            justify-content: flex-end;
+        }
+
+        .breadcrumb-item,
+        .breadcrumb-item a {
+            color: #6f83a2;
+            font-size: 0.92rem;
+            text-decoration: none;
+        }
+
+        .breadcrumb-item.active {
+            color: var(--admin-accent);
+        }
+
+        .card {
+            border: 1px solid rgba(223, 231, 243, 0.9);
+            border-radius: 28px;
+            overflow: hidden;
+            background: var(--admin-card);
+            box-shadow: 0 16px 34px rgba(29, 49, 91, 0.08);
+        }
+
+        .card-header {
+            padding: 20px 26px;
+            background: linear-gradient(135deg, #2f6df6 0%, #1748b6 100%);
+            color: #ffffff;
+            border-bottom: none;
+        }
+
+        .card-title {
+            margin: 0;
+            font-size: 1.08rem;
+            font-weight: 600;
+        }
+
+        .card-body {
+            padding: 26px;
+        }
+
+        .card-footer {
+            padding: 0 26px 26px;
+            border-top: none;
+            background: transparent;
+        }
+
+        .btn {
+            border-radius: 16px;
+            font-weight: 600;
+            padding: 0.7rem 1.15rem;
+        }
+
+        .btn-primary {
+            border: none;
+            background: linear-gradient(135deg, #2f6df6 0%, #1748b6 100%);
+            box-shadow: 0 12px 20px rgba(47, 109, 246, 0.22);
+        }
+
+        .btn-outline-secondary {
+            border-color: #d1ddf1;
+            color: #35527e;
+        }
+
+        .form-control,
+        .custom-file-input,
+        .custom-file-label,
+        .select2-container--default .select2-selection--single,
+        .select2-container--default .select2-selection--multiple {
+            border-radius: 18px !important;
+            border-color: #d7e1f0 !important;
+            min-height: 54px;
+            box-shadow: none !important;
+        }
+
+        textarea.form-control {
+            min-height: 140px;
+        }
+
+        .form-control:focus,
+        .custom-file-input:focus ~ .custom-file-label,
+        .select2-container--default.select2-container--focus .select2-selection--multiple,
+        .select2-container--default.select2-container--open .select2-selection--single {
+            border-color: rgba(47, 109, 246, 0.58) !important;
+            box-shadow: 0 0 0 4px rgba(47, 109, 246, 0.12) !important;
+        }
+
+        .alert {
+            border-radius: 18px;
+            border: none;
+            box-shadow: 0 12px 24px rgba(31, 54, 102, 0.08);
+        }
+
+        .admin-mobile-bar {
+            display: none;
+        }
+
+        .bottom-navbar {
+            display: none;
+        }
+
+        .sidebar-backdrop {
+            display: none;
+        }
+
+        @media (max-width: 991.98px) {
+            body.sidebar-open {
+                overflow: hidden;
+            }
+
+            .admin-mobile-bar {
+                position: fixed;
+                top: 12px;
+                left: 14px;
+                right: 14px;
+                z-index: 1060;
+                display: flex;
+                align-items: center;
+                gap: 12px;
+                padding: 10px 12px;
+                border-radius: 22px;
+                background: rgba(255, 255, 255, 0.92);
+                backdrop-filter: blur(14px);
+                box-shadow: 0 18px 30px rgba(29, 49, 91, 0.12);
+                border: 1px solid rgba(220, 229, 243, 0.88);
+            }
+
+            .mobile-menu-toggle {
+                width: 42px;
+                height: 42px;
+                border: none;
+                border-radius: 14px;
+                background: var(--admin-accent-soft);
+                color: var(--admin-accent);
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+                font-size: 1rem;
+            }
+
+            .mobile-brand {
+                color: #17355f;
+                text-decoration: none;
+                font-weight: 700;
+                font-size: 1rem;
+                line-height: 1.3;
+            }
+
+            .main-sidebar {
+                width: min(336px, calc(100vw - 40px));
+                z-index: 1070;
+                transform: translateX(-104%);
+                transition: transform 0.22s ease;
+                padding-top: 18px;
+                background: linear-gradient(180deg, #f6f9ff 0%, #edf3ff 56%, #e6eeff 100%);
+                box-shadow: 24px 0 44px rgba(20, 42, 82, 0.18);
+            }
+
+            body.sidebar-open .main-sidebar {
+                transform: translateX(0);
+            }
+
+            .sidebar-backdrop {
+                position: fixed;
+                inset: 0;
+                z-index: 1035;
+                display: block;
+                background: rgba(16, 28, 54, 0.34);
+                backdrop-filter: blur(3px);
+                opacity: 0;
+                pointer-events: none;
+                transition: opacity 0.22s ease;
+            }
+
+            body.sidebar-open .sidebar-backdrop {
+                opacity: 1;
+                pointer-events: auto;
+            }
+
+            .admin-main {
+                margin-left: 0;
+                padding: 84px 14px 86px;
+                overflow-x: hidden;
+            }
+
+            .content-wrapper {
+                border-radius: 24px;
+                min-height: auto !important;
+            }
+
+            .content-header {
+                padding: 22px 20px 0;
+            }
+
+            .content {
+                padding: 0 20px 10px;
+            }
+
+            .content .container-fluid {
+                padding-left: 0;
+                padding-right: 0;
+                overflow-x: hidden;
+            }
+
+            .bottom-navbar {
+                position: fixed;
+                bottom: 12px;
+                left: 14px;
+                right: 14px;
+                background: rgba(18, 42, 82, 0.96);
+                border-radius: 22px;
+                box-shadow: 0 20px 36px rgba(18, 42, 82, 0.24);
+                display: flex;
+                justify-content: space-around;
+                padding: 10px 0;
+                z-index: 1050;
+            }
+
+            .bottom-navbar a {
+                color: rgba(226, 235, 255, 0.72);
+                font-size: 12px;
+                text-decoration: none;
+                text-align: center;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                gap: 4px;
+                min-width: 64px;
+            }
+
+            .bottom-navbar a.active,
+            .bottom-navbar a:hover {
+                color: #ffffff;
+            }
+
+            .bottom-navbar i {
+                font-size: 18px;
+            }
+        }
+    </style>
+        </head>
+<body class="hold-transition admin-skin">
+            <div class="admin-mobile-bar d-lg-none">
+            <button type="button" class="mobile-menu-toggle" data-sidebar-toggle aria-label="Open menu">
+                <i class="fas fa-bars"></i>
+            </button>
+            <a href="https://orbitinternetkenya.co.ke" class="mobile-brand">OrbitInternet Kenya</a>
+        </div>
+    
+    <div class="wrapper">
+                    <aside class="main-sidebar elevation-4">
+                <div class="sidebar">
+                    <div class="sidebar-brand-card">
+                        <a href="https://orbitinternetkenya.co.ke">
+                            <div class="sidebar-brand-title">OrbitInternet Kenya</div>
+                        </a>
+                    </div>
+
+                    <nav class="mt-4 sidebar-menu-shell">
+                        <ul class="nav nav-pills nav-sidebar flex-column" role="menu" data-accordion="false">
+                            <li class="nav-header">Content Management</li>
+
+<li class="nav-item">
+    <a href="https://orbitinternetkenya.co.ke/categories" class="nav-link ">
+        <span class="nav-icon-wrap"><i class="fas fa-list-alt nav-icon"></i></span>
+        <p>Categories</p>
+    </a>
+</li>
+
+<li class="nav-item">
+    <a href="https://orbitinternetkenya.co.ke/sub_categories" class="nav-link ">
+        <span class="nav-icon-wrap"><i class="fas fa-tags nav-icon"></i></span>
+        <p>Sub Categories</p>
+    </a>
+</li>
+
+<li class="nav-item">
+    <a href="https://orbitinternetkenya.co.ke/products" class="nav-link ">
+        <span class="nav-icon-wrap"><i class="fas fa-boxes nav-icon"></i></span>
+        <p>Products</p>
+    </a>
+</li>
+
+<li class="nav-item">
+    <a href="https://orbitinternetkenya.co.ke/orders" class="nav-link ">
+        <span class="nav-icon-wrap"><i class="fas fa-shopping-cart nav-icon"></i></span>
+        <p>Orders</p>
+    </a>
+</li>
+
+<li class="nav-item">
+    <a href="https://orbitinternetkenya.co.ke/invoices" class="nav-link ">
+        <span class="nav-icon-wrap"><i class="fas fa-file-invoice nav-icon"></i></span>
+        <p>Invoices</p>
+    </a>
+</li>
+
+<li class="nav-item">
+    <a href="https://orbitinternetkenya.co.ke/enquiries" class="nav-link ">
+        <span class="nav-icon-wrap"><i class="fas fa-bell nav-icon"></i></span>
+        <p>Requests</p>
+    </a>
+</li>
+
+<li class="nav-item">
+    <a href="https://orbitinternetkenya.co.ke/designs" class="nav-link ">
+        <span class="nav-icon-wrap"><i class="fas fa-drafting-compass nav-icon"></i></span>
+        <p>Designs</p>
+    </a>
+</li>
+
+<li class="nav-header">Admin Panel</li>
+
+<li class="nav-item">
+    <a href="https://orbitinternetkenya.co.ke/admin/users" class="nav-link ">
+        <span class="nav-icon-wrap"><i class="fas fa-users nav-icon"></i></span>
+        <p>Users</p>
+    </a>
+</li>
+
+<li class="nav-item">
+    <a href="https://orbitinternetkenya.co.ke/admin/pages-content" class="nav-link ">
+        <span class="nav-icon-wrap"><i class="fas fa-file-alt nav-icon"></i></span>
+        <p>Homepage Content</p>
+    </a>
+</li>
+
+<li class="nav-item">
+    <a href="https://orbitinternetkenya.co.ke/sliders" class="nav-link ">
+        <span class="nav-icon-wrap"><i class="fas fa-images nav-icon"></i></span>
+        <p>Sliders</p>
+    </a>
+</li>
+
+<li class="nav-item">
+    <a href="https://orbitinternetkenya.co.ke/pages" class="nav-link ">
+        <span class="nav-icon-wrap"><i class="fas fa-edit nav-icon"></i></span>
+        <p>Pages</p>
+    </a>
+</li>
+
+<li class="nav-item">
+    <a href="https://orbitinternetkenya.co.ke/service" class="nav-link ">
+        <span class="nav-icon-wrap"><i class="fas fa-tools nav-icon"></i></span>
+        <p>Services</p>
+    </a>
+</li>
+
+<li class="nav-item">
+    <a href="https://orbitinternetkenya.co.ke/testimonials" class="nav-link ">
+        <span class="nav-icon-wrap"><i class="fas fa-comment-dots nav-icon"></i></span>
+        <p>Testimonials</p>
+    </a>
+</li>
+
+<li class="nav-header">Session</li>
+
+<li class="nav-item">
+    <a href="#" class="nav-link" onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
+        <span class="nav-icon-wrap"><i class="fas fa-sign-out-alt nav-icon"></i></span>
+        <p>Logout</p>
+    </a>
+    <form id="logout-form" action="https://orbitinternetkenya.co.ke/logout" method="POST" style="display: none;">
+        <input type="hidden" name="_token" value="VILdbTXIcT9wooWKn53GuV6eeWT6mEgcolmKxd28" autocomplete="off">    </form>
+</li>
+                        </ul>
+                    </nav>
+                </div>
+            </aside>
+
+            <div class="sidebar-backdrop d-lg-none" data-sidebar-toggle></div>
+        
+        <main class="admin-main">
+            <div class="admin-flash">
+                            </div>
+
+               <!-- Content Wrapper. Contains page content -->
+<div class="content-wrapper">
+    <!-- Content Header (Page header) -->
+    <section class="content-header">
+        <div class="container-fluid">
+            <div class="row mb-3">
+                <div class="col-sm-6">
+                    <h1 class="font-weight-bold">Manage Pages</h1>
+                </div>
+                <div class="col-sm-6 text-right">
+                    <!-- You can add a breadcrumb or action button here -->
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Main content -->
+    <section class="content">
+        <div class="container-fluid">
+            <div class="row">
+                <div class="col-md-10">
+                    <div class="card shadow-sm">
+                        <div class="card-header bg-primary text-white">
+                            <h3 class="card-title font-weight-bold">Add New Post</h3>
+                        </div>
+
+                        <!-- Card Body -->
+                        <div class="card-body">
+                            <form action="https://orbitinternetkenya.co.ke/save-page" method="POST" enctype="multipart/form-data">
+                                <input type="hidden" name="_token" value="VILdbTXIcT9wooWKn53GuV6eeWT6mEgcolmKxd28" autocomplete="off">
+                                <!-- Meta Title -->
+                                <div class="form-group">
+                                    <label for="meta_title">Meta Title</label>
+                                    <input type="text" class="form-control" name="meta_title" value="" id="meta_title" placeholder="Enter Meta Title">
+                                </div>
+
+                                <!-- Meta Description -->
+                                <div class="form-group">
+                                    <label for="meta_description">Meta Description</label>
+                                    <input type="text" class="form-control" name="meta_description" value="" id="meta_description" placeholder="Enter Meta Description">
+                                </div>
+
+                                <!-- Keyword Title -->
+                                <div class="form-group">
+                                    <label for="title">Page Title</label>
+                                    <input type="text" class="form-control" name="title" value="" id="title" placeholder="Enter Keyword Title">
+                                </div>
+
+                                <!-- Image Alt Text -->
+                                <div class="form-group">
+                                    <label for="alter_text">Image Alt Text</label>
+                                    <input type="text" class="form-control" name="alter_text" value="" id="alter_text" placeholder="Enter Image Alt Text">
+                                </div>
+
+                                <!-- Heading 2 -->
+                                <div class="form-group">
+                                    <label for="head_2">Heading 2</label>
+                                    <input type="text" class="form-control" name="head_2" value="" id="head_2" placeholder="Enter Heading 2">
+                                </div>
+
+                                <!-- Type Select -->
+                                <div class="form-group">
+                                    <label for="type">Type</label>
+                                    <select class="form-control select2" name="type" id="type" style="width: 100%;">
+                                       
+                                        <option selected value="Post">Post</option>
+                                        <option value="Page">Page</option>
+                                    </select>
+                                </div>
+
+                       
+
+
+
+                                <!-- Row for Page Description -->
+                        <div class="form-group">
+                                    <label>Page Description:</label>
+                                   
+                                        <script src="https://orbitinternetkenya.co.ke/assets/js/tinymce/tinymce.min.js"></script>
+                                        <textarea id="textarea" name="description"></textarea>
+                                    </div>
+
+                                        <script type="text/javascript">
+                                            tinymce.init({
+                                                selector: "textarea#textarea",
+                                                plugins: "image advcode link lists media table code wordcount fullscreen",
+                                                toolbar: "undo redo | styleselect | bold italic | alignleft aligncenter alignright alignjustify | outdent indent | link image media | code fullscreen",
+                                                menubar: "file edit view insert format tools table help",
+                                                height: 400,
+                                                image_title: true,
+                                                automatic_uploads: true,
+                                                promotion: false,
+                                                branding: false,
+                                                file_picker_types: 'image',
+                                                file_picker_callback: function (cb, value, meta) {
+                                                    let input = document.createElement('input');
+                                                    input.setAttribute('type', 'file');
+                                                    input.setAttribute('accept', 'image/*');
+                                                    input.onchange = function () {
+                                                        let file = this.files[0];
+                                                        let reader = new FileReader();
+                                                        reader.onload = function () {
+                                                            let id = 'blobid' + (new Date()).getTime();
+                                                            let blobCache = tinymce.activeEditor.editorUpload.blobCache;
+                                                            let base64 = reader.result.split(',')[1];
+                                                            let blobInfo = blobCache.create(id, file, base64);
+                                                            blobCache.add(blobInfo);
+                                                            cb(blobInfo.blobUri(), { title: file.name });
+                                                        };
+                                                        reader.readAsDataURL(file);
+                                                    };
+                                                    input.click();
+                                                },
+                                                setup: function (editor) {
+                                                    editor.on('ExecCommand', function (e) {
+                                                        if (e.command === 'mceUpdateImage') {
+                                                            const img = editor.selection.getNode();
+                                                            img.setAttribute('data-src', img.src);
+                                                        }
+                                                    });
+                                                },
+                                            });
+                                        </script>     
+
+                                        <style>
+                                            textarea#textarea {
+                                                border-radius: 8px;
+                                                border: 1px solid #ccc;
+                                                padding: 10px;
+                                                font-size: 14px;
+                                                width: 100%;
+                                                box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
+                                            }
+                                        </style>
+                                 
+                             
+
+
+                                <!-- File Upload -->
+                                <div class="form-group">
+                                    <label for="exampleInputFile">Upload Image (optional, only for Posts)</label>
+                                    <div class="custom-file">
+                                        <input type="file" class="custom-file-input" id="exampleInputFile" name="photo">
+                                        <label class="custom-file-label" for="exampleInputFile">Choose file</label>
+                                    </div>
+                                </div>
+
+                                <!-- Form Buttons -->
+                                <div class="form-group text-right">
+                                    <button type="button" class="btn btn-danger" data-dismiss="modal">Cancel</button>
+                                    <button type="submit" class="btn btn-primary">Submit</button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                    <!-- /.card -->
+                </div>
+            </div>
+        </div>
+    </section>
+    <!-- /.content -->
+</div>
+
+
+                                   
+        </main>
+
+                    <div class="bottom-navbar d-md-none">
+                <a href="https://orbitinternetkenya.co.ke/home" class="">
+                    <i class="fas fa-tachometer-alt"></i>
+                    <span>Dashboard</span>
+                </a>
+                <a href="https://orbitinternetkenya.co.ke/orders" class="">
+                    <i class="fas fa-shopping-cart"></i>
+                    <span>Orders</span>
+                </a>
+                <a href="https://orbitinternetkenya.co.ke/invoices" class="">
+                    <i class="fas fa-file-invoice"></i>
+                    <span>Invoices</span>
+                </a>
+                <a href="https://orbitinternetkenya.co.ke/admin/pages-content" class="">
+                    <i class="fas fa-file-alt"></i>
+                    <span>Homepage</span>
+                </a>
+                <a href="#" data-sidebar-toggle role="button" aria-label="Open menu">
+                    <i class="fas fa-bars"></i>
+                    <span>More</span>
+                </a>
+            </div>
+            </div>
+
+    <script src="https://orbitinternetkenya.co.ke/assets/admin/plugins/jquery/jquery.min.js"></script>
+    <script src="https://orbitinternetkenya.co.ke/assets/admin/plugins/jquery-ui/jquery-ui.min.js"></script>
+    <script>
+        $.widget.bridge('uibutton', $.ui.button);
+    </script>
+    <script src="https://orbitinternetkenya.co.ke/assets/admin/plugins/bootstrap/js/bootstrap.bundle.min.js"></script>
+    <script src="https://orbitinternetkenya.co.ke/assets/admin/plugins/chart.js/Chart.min.js"></script>
+    <script src="https://orbitinternetkenya.co.ke/assets/admin/plugins/sparklines/sparkline.js"></script>
+    <script src="https://orbitinternetkenya.co.ke/assets/admin/plugins/jqvmap/jquery.vmap.min.js"></script>
+    <script src="https://orbitinternetkenya.co.ke/assets/admin/plugins/jqvmap/maps/jquery.vmap.usa.js"></script>
+    <script src="https://orbitinternetkenya.co.ke/assets/admin/plugins/jquery-knob/jquery.knob.min.js"></script>
+    <script src="https://orbitinternetkenya.co.ke/assets/admin/plugins/moment/moment.min.js"></script>
+    <script src="https://orbitinternetkenya.co.ke/assets/admin/plugins/daterangepicker/daterangepicker.js"></script>
+    <script src="https://orbitinternetkenya.co.ke/assets/admin/plugins/tempusdominus-bootstrap-4/js/tempusdominus-bootstrap-4.min.js"></script>
+    <script src="https://orbitinternetkenya.co.ke/assets/admin/plugins/summernote/summernote-bs4.min.js"></script>
+    <script src="https://orbitinternetkenya.co.ke/assets/admin/plugins/overlayScrollbars/js/jquery.overlayScrollbars.min.js"></script>
+    <script src="https://orbitinternetkenya.co.ke/assets/admin/dist/js/adminlte.js"></script>
+    <script src="https://orbitinternetkenya.co.ke/assets/admin/plugins/select2/js/select2.full.min.js"></script>
+    <script src="https://orbitinternetkenya.co.ke/assets/admin/dist/js/pages/dashboard.js"></script>
+
+    <script>
+        $(function () {
+            const mobileSidebarBreakpoint = 991.98;
+            const shouldResetSidebarToTop = false;
+            const $sidebarScroller = $('.main-sidebar .sidebar');
+
+            const resetSidebarPosition = function () {
+                if (!shouldResetSidebarToTop || !$sidebarScroller.length) {
+                    return;
+                }
+
+                $sidebarScroller.scrollTop(0);
+            };
+
+            const closeMobileSidebar = function () {
+                $('body').removeClass('sidebar-open');
+            };
+
+            resetSidebarPosition();
+            $(window).on('load pageshow', resetSidebarPosition);
+            setTimeout(resetSidebarPosition, 60);
+
+            $(document).on('click', '[data-sidebar-toggle]', function (event) {
+                if (window.innerWidth > mobileSidebarBreakpoint) {
+                    return;
+                }
+
+                event.preventDefault();
+                $('body').toggleClass('sidebar-open');
+
+                if ($('body').hasClass('sidebar-open')) {
+                    resetSidebarPosition();
+                }
+            });
+
+            $(document).on('click', '.main-sidebar .nav-link', function () {
+                if (window.innerWidth <= mobileSidebarBreakpoint) {
+                    closeMobileSidebar();
+                }
+            });
+
+            $(window).on('resize', function () {
+                if (window.innerWidth > mobileSidebarBreakpoint) {
+                    closeMobileSidebar();
+                }
+            });
+
+            $('.select2').select2();
+            $('.select2bs4').select2({ theme: 'bootstrap4' });
+
+            if ($('#reservationdate').length) {
+                $('#reservationdate').datetimepicker({ format: 'L' });
+            }
+
+            if ($('#reservation').length) {
+                $('#reservation').daterangepicker();
+            }
+
+            if ($.fn.inputmask) {
+                $('[data-mask]').inputmask();
+            }
+        });
+    </script>
+
+        </body>
+</html>
+

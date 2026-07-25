@@ -3,6 +3,9 @@
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 
+const WIA_PROJECT_IMAGE_WIDTH = 1600;
+const WIA_PROJECT_IMAGE_HEIGHT = 900;
+
 if (! function_exists('wia_project_categories')) {
     function wia_project_categories(): array
     {
@@ -45,6 +48,8 @@ if (! function_exists('wia_store_uploaded_image')) {
         $file->move($directory, $filename);
 
         $source = $directory.DIRECTORY_SEPARATOR.$filename;
+        wia_normalize_project_image($source);
+
         $publicHtmlDirectory = dirname(base_path()).DIRECTORY_SEPARATOR.'public_html'.DIRECTORY_SEPARATOR.'assets'.DIRECTORY_SEPARATOR.'uploads'.DIRECTORY_SEPARATOR.'projects';
 
         if (is_dir(dirname(base_path()).DIRECTORY_SEPARATOR.'public_html')) {
@@ -59,6 +64,80 @@ if (! function_exists('wia_store_uploaded_image')) {
         }
 
         return '/assets/uploads/projects/'.$filename;
+    }
+}
+
+if (! function_exists('wia_normalize_project_image')) {
+    function wia_normalize_project_image(string $path): void
+    {
+        if (! extension_loaded('gd') || ! function_exists('imagecreatetruecolor')) {
+            return;
+        }
+
+        $info = @getimagesize($path);
+        if (! $info) {
+            return;
+        }
+
+        [$sourceWidth, $sourceHeight] = $info;
+        $mime = $info['mime'] ?? '';
+
+        if ($sourceWidth === WIA_PROJECT_IMAGE_WIDTH && $sourceHeight === WIA_PROJECT_IMAGE_HEIGHT) {
+            return;
+        }
+
+        $bytes = @file_get_contents($path);
+        if ($bytes === false) {
+            return;
+        }
+
+        $source = @imagecreatefromstring($bytes);
+        if (! $source) {
+            return;
+        }
+
+        $target = imagecreatetruecolor(WIA_PROJECT_IMAGE_WIDTH, WIA_PROJECT_IMAGE_HEIGHT);
+        $fill = imagecolorallocate($target, 255, 255, 255);
+        imagefill($target, 0, 0, $fill);
+
+        $sourceRatio = $sourceWidth / $sourceHeight;
+        $targetRatio = WIA_PROJECT_IMAGE_WIDTH / WIA_PROJECT_IMAGE_HEIGHT;
+
+        if ($sourceRatio > $targetRatio) {
+            $cropHeight = $sourceHeight;
+            $cropWidth = (int) round($sourceHeight * $targetRatio);
+            $sourceX = (int) floor(($sourceWidth - $cropWidth) / 2);
+            $sourceY = 0;
+        } else {
+            $cropWidth = $sourceWidth;
+            $cropHeight = (int) round($sourceWidth / $targetRatio);
+            $sourceX = 0;
+            $sourceY = (int) floor(($sourceHeight - $cropHeight) / 2);
+        }
+
+        imagecopyresampled(
+            $target,
+            $source,
+            0,
+            0,
+            $sourceX,
+            $sourceY,
+            WIA_PROJECT_IMAGE_WIDTH,
+            WIA_PROJECT_IMAGE_HEIGHT,
+            $cropWidth,
+            $cropHeight
+        );
+
+        if ($mime === 'image/png') {
+            imagepng($target, $path, 8);
+        } elseif ($mime === 'image/webp' && function_exists('imagewebp')) {
+            imagewebp($target, $path, 86);
+        } else {
+            imagejpeg($target, $path, 86);
+        }
+
+        imagedestroy($source);
+        imagedestroy($target);
     }
 }
 

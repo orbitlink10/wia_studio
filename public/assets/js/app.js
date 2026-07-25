@@ -3,6 +3,76 @@ const menuToggle = document.getElementById("menuToggle");
 const sideMenu = document.getElementById("sideMenu");
 const sideMenuDropdown = document.getElementById("sideMenuDropdown");
 const wiaSplash = document.getElementById("wiaSplash");
+const WIA_PROJECT_IMAGE_WIDTH = 1600;
+const WIA_PROJECT_IMAGE_HEIGHT = 900;
+
+const resizeProjectUpload = (file) => new Promise((resolve) => {
+    if (!file?.type?.startsWith("image/") || file.type === "image/svg+xml" || !window.DataTransfer) {
+        resolve(file);
+        return;
+    }
+
+    const image = new Image();
+    const objectUrl = URL.createObjectURL(file);
+
+    image.onload = () => {
+        const canvas = document.createElement("canvas");
+        canvas.width = WIA_PROJECT_IMAGE_WIDTH;
+        canvas.height = WIA_PROJECT_IMAGE_HEIGHT;
+
+        const sourceRatio = image.naturalWidth / image.naturalHeight;
+        const targetRatio = WIA_PROJECT_IMAGE_WIDTH / WIA_PROJECT_IMAGE_HEIGHT;
+        let cropWidth = image.naturalWidth;
+        let cropHeight = image.naturalHeight;
+        let sourceX = 0;
+        let sourceY = 0;
+
+        if (sourceRatio > targetRatio) {
+            cropWidth = Math.round(image.naturalHeight * targetRatio);
+            sourceX = Math.floor((image.naturalWidth - cropWidth) / 2);
+        } else {
+            cropHeight = Math.round(image.naturalWidth / targetRatio);
+            sourceY = Math.floor((image.naturalHeight - cropHeight) / 2);
+        }
+
+        const context = canvas.getContext("2d");
+        context.fillStyle = "#fff";
+        context.fillRect(0, 0, canvas.width, canvas.height);
+        context.drawImage(image, sourceX, sourceY, cropWidth, cropHeight, 0, 0, canvas.width, canvas.height);
+
+        canvas.toBlob((blob) => {
+            URL.revokeObjectURL(objectUrl);
+            if (!blob) {
+                resolve(file);
+                return;
+            }
+
+            const baseName = file.name.replace(/\.[^.]+$/, "") || "project-image";
+            resolve(new File([blob], `${baseName}.jpg`, { type: "image/jpeg", lastModified: Date.now() }));
+        }, "image/jpeg", 0.86);
+    };
+
+    image.onerror = () => {
+        URL.revokeObjectURL(objectUrl);
+        resolve(file);
+    };
+
+    image.src = objectUrl;
+});
+
+document.querySelectorAll('input[type="file"][accept^="image/"]').forEach((input) => {
+    input.addEventListener("change", async () => {
+        const file = input.files?.[0];
+        if (!file || !window.DataTransfer || input.dataset.wiaNormalizing === "true") return;
+
+        input.dataset.wiaNormalizing = "true";
+        const resized = await resizeProjectUpload(file);
+        const transfer = new DataTransfer();
+        transfer.items.add(resized);
+        input.files = transfer.files;
+        input.dataset.wiaNormalizing = "false";
+    });
+});
 
 if (wiaSplash) {
     const runSplashIntro = () => {
@@ -230,6 +300,14 @@ const readDetailChapters = (row) => {
     }
 };
 
+const readDetailCredits = (row) => {
+    try {
+        return JSON.parse(row.dataset.detailCredits || "[]");
+    } catch {
+        return [];
+    }
+};
+
 const escapeHtml = (value = "") => String(value)
     .replaceAll("&", "&amp;")
     .replaceAll("<", "&lt;")
@@ -241,6 +319,11 @@ const optimizedImage = (url = "", width = 1400) => {
     if (!url || !url.includes("images.unsplash.com")) return url;
     const joiner = url.includes("?") ? "&" : "?";
     return `${url}${joiner}auto=format&fit=crop&w=${width}&q=78`;
+};
+
+const mapEmbedUrl = (location = "") => {
+    const query = encodeURIComponent(location || "Nairobi, Kenya");
+    return `https://maps.google.com/maps?q=${query}&z=12&output=embed`;
 };
 
 const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -406,11 +489,9 @@ const buildInlineSlides = (row, images, chapters) => {
     }
 
     const slides = [
-        { type: "hero", label: title, body: row.dataset.location || "", image: hero },
-        { type: "copy", label: "Overview", body: summary, image: row.dataset.overviewImage || hero },
-        { type: "facts", label: "Project Facts", body: summary, image: hero },
+        { label: title, body: summary, image: hero },
+        { label: "Overview", body: summary, image: row.dataset.overviewImage || hero },
         ...chapterSlides.map((chapter) => ({
-            type: "story",
             label: chapter.label || "Project Detail",
             body: chapter.body || summary,
             image: chapter.image || hero,
@@ -420,22 +501,20 @@ const buildInlineSlides = (row, images, chapters) => {
     const supportImages = [chapters[0]?.image, chapters[1]?.image, chapters[2]?.image, hero].filter(Boolean);
     slides.push(
         {
-            type: "copy",
             label: "Spatial Strategy",
             body: "A consistent slide sequence keeps the project easy to scan, share, and review across devices.",
             image: row.dataset.spatialImage || supportImages[0] || hero,
         },
         {
-            type: "story",
             label: "Material And Atmosphere",
             body: "Media is lazy loaded and sized for the deck so the presentation remains quick without losing the studio tone.",
             image: row.dataset.materialImage || supportImages[1] || hero,
         },
         {
-            type: "copy",
-            label: "Delivery Notes",
-            body: `${row.dataset.status || "Project"} / ${row.dataset.size || ""} / ${row.dataset.typology || ""}`,
-            image: row.dataset.deliveryImage || supportImages[2] || hero,
+            type: "map",
+            label: "Location",
+            body: row.dataset.location || title,
+            location: row.dataset.location || title,
         },
     );
 
@@ -581,6 +660,7 @@ const openInlineProject = (row) => {
 
     const images = readDetailImages(row);
     const chapters = readDetailChapters(row);
+    const credits = readDetailCredits(row);
     const title = row.dataset.title || "Project";
     const slides = buildInlineSlides(row, images, chapters);
     const projectUrl = row.dataset.projectUrl || row.href || "#";
@@ -589,7 +669,6 @@ const openInlineProject = (row) => {
     panel.innerHTML = `
         <div class="pl-detail-main" data-inline-track tabindex="0" aria-label="${title} details">
             ${slides.map((item, index) => {
-                const eyebrow = item.label || "Project";
                 if (index === 0) {
                     return `
                         <section class="pl-detail-panel pl-detail-panel-hero">
@@ -605,53 +684,54 @@ const openInlineProject = (row) => {
                                 </dl>
                                 <div class="pl-detail-actions">
                                     <span>Share</span>
-                                    <button type="button" data-inline-close>Close</button>
+                                    <button type="button" data-inline-close>View all projects</button>
                                     <a href="${escapeHtml(projectUrl)}">Open page</a>
                                     <button type="button" data-inline-copy="${escapeHtml(projectUrl)}">Copy link</button>
                                 </div>
                             </aside>
                             <figure class="pl-detail-hero">
-                                <img src="${escapeHtml(optimizedImage(item.image, 1500))}" alt="${escapeHtml(title)}" loading="lazy" decoding="async">
+                                <img src="${escapeHtml(optimizedImage(item.image, 1600))}" alt="${escapeHtml(title)}" width="1600" height="900" loading="lazy" decoding="async">
                             </figure>
                             <article class="pl-detail-copy">
-                                <span>${eyebrow}</span>
-                                <p>${escapeHtml(row.dataset.summary || item.body)}</p>
+                                <p>${escapeHtml(item.body || "")}</p>
                             </article>
                         </section>`;
                 }
 
-                if (item.type === "facts") {
+                if (item.type === "map") {
                     return `
-                        <section class="pl-detail-panel pl-detail-story">
-                            <article>
-                                <span>${eyebrow}</span>
-                                <p>${escapeHtml(item.label)}</p>
-                            </article>
-                            <article class="pl-detail-copy">
-                                <dl class="project-facts-slide">
-                                    <dt>Client</dt><dd>${escapeHtml(row.dataset.client || "WIA Studio")}</dd>
-                                    <dt>Typology</dt><dd>${escapeHtml(row.dataset.typology || "")}</dd>
-                                    <dt>Size</dt><dd>${escapeHtml(row.dataset.size || "")}</dd>
-                                    <dt>Status</dt><dd>${escapeHtml(row.dataset.status || "")}</dd>
-                                    <dt>URL</dt><dd>${escapeHtml(projectUrl)}</dd>
-                                </dl>
-                            </article>
-                        </section>`;
+                    <section class="pl-detail-panel pl-detail-map-panel">
+                        <article>
+                            <span>${escapeHtml(item.label || "Location")}</span>
+                            <p>${escapeHtml(item.body || row.dataset.location || title)}</p>
+                        </article>
+                        <figure class="pl-detail-map">
+                            <iframe src="${escapeHtml(mapEmbedUrl(item.location || row.dataset.location || title))}" title="${escapeHtml(`${title} map`)}" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
+                        </figure>
+                    </section>`;
                 }
 
                 return `
                     <section class="pl-detail-panel pl-detail-story">
                         <article>
-                            <span>${eyebrow}</span>
-                            <p>${escapeHtml(item.label)}</p>
                             <p>${escapeHtml(item.body || "")}</p>
                         </article>
                         <figure class="pl-detail-image">
-                            <img src="${escapeHtml(optimizedImage(item.image, 1300))}" alt="${escapeHtml(`${title} ${item.label}`)}" loading="lazy" decoding="async">
+                            <img src="${escapeHtml(optimizedImage(item.image, 1600))}" alt="${escapeHtml(`${title} ${item.label}`)}" width="1600" height="900" loading="lazy" decoding="async">
                         </figure>
                     </section>`;
             }).join("")}
+            <section class="pl-detail-panel pl-detail-credits-panel">
+                <article class="pl-detail-credits">
+                    <span>Collaborators</span>
+                    <h2>Project Team</h2>
+                    ${credits.length
+                        ? `<dl>${credits.map((credit) => `<div><dt>${escapeHtml(credit.role || "Collaborator")}</dt><dd>${escapeHtml(credit.name || "")}</dd></div>`).join("")}</dl>`
+                        : `<p>No collaborators have been added for this project yet.</p>`}
+                </article>
+            </section>
         </div>
+        <button class="pl-view-all-projects" type="button" data-inline-close>View all projects</button>
     `;
 
     row.classList.add("is-expanded");
@@ -669,7 +749,9 @@ const openInlineProject = (row) => {
         button.textContent = "Copied";
     });
 
-    panel.querySelector("[data-inline-close]")?.addEventListener("click", () => closeInlineProject());
+    panel.querySelectorAll("[data-inline-close]").forEach((button) => {
+        button.addEventListener("click", () => closeInlineProject());
+    });
 
     window.setTimeout(() => {
         requestAnimationFrame(() => {
@@ -870,7 +952,7 @@ if (wiaProjectsApp && Array.isArray(window.WIA_PROJECTS)) {
         hTrack.innerHTML = "";
         const visibleWidth = hScroll.clientWidth || 900;
         const hero = panel("h-panel-hero", Math.max(680, Math.min(visibleWidth * 0.9, 980)));
-        hero.innerHTML = `<img src="${project.hero_image}" alt="${project.title}"><span class="panel-caption">${project.title} / ${project.location}</span>`;
+        hero.innerHTML = `<img src="${project.hero_image}" alt="${project.title}" width="1600" height="900"><span class="panel-caption">${project.title} / ${project.location}</span>`;
         hTrack.appendChild(hero);
 
         const overview = panel("h-panel-text", 360);
@@ -880,7 +962,7 @@ if (wiaProjectsApp && Array.isArray(window.WIA_PROJECTS)) {
         project.chapters.forEach((chapter) => {
             const chapterPanel = panel("h-panel-chapter", Math.max(680, Math.min(visibleWidth * 0.76, 820)));
             chapterPanel.innerHTML = `
-                <figure><img src="${chapter.image}" alt="${chapter.label}"></figure>
+                <figure><img src="${chapter.image}" alt="${chapter.label}" width="1600" height="900"></figure>
                 <div>
                     <span class="panel-eyebrow">${String(chapter.position).padStart(2, "0")}</span>
                     <h3>${chapter.label}</h3>

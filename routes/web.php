@@ -14,6 +14,27 @@ use Illuminate\Validation\Rule;
 
 require_once app_path('Support/helpers.php');
 
+$syncProjectCredits = function (Project $project, ?string $creditsText): void {
+    $credits = collect(preg_split('/\R+/', (string) $creditsText))
+        ->map(fn ($line) => trim($line))
+        ->filter()
+        ->map(function ($line) {
+            [$role, $name] = str_contains($line, ':')
+                ? array_map('trim', explode(':', $line, 2))
+                : ['Collaborator', $line];
+
+            return [
+                'role' => $role ?: 'Collaborator',
+                'name' => $name ?: $line,
+            ];
+        })
+        ->filter(fn ($credit) => $credit['name'] !== '')
+        ->values();
+
+    $project->credits()->delete();
+    $project->credits()->createMany($credits->all());
+};
+
 Route::get('/', function () {
     return view('projects.index', [
         'projects' => Project::with(['chapters' => fn ($query) => $query->orderBy('position'), 'credits'])->latest('year')->get(),
@@ -201,6 +222,10 @@ Route::patch('/admin/studio-profile', function (Request $request) {
         'image_two' => ['nullable', 'string', 'max:500'],
         'contact_email' => ['required', 'email', 'max:160'],
         'phone_number' => ['required', 'string', 'max:80'],
+        'footer_emails' => ['nullable', 'string', 'max:20000'],
+        'footer_offices' => ['nullable', 'string', 'max:20000'],
+        'footer_socials' => ['nullable', 'string', 'max:20000'],
+        'footer_legal' => ['nullable', 'string', 'max:20000'],
         'architecture_text' => ['required', 'string', 'max:2000'],
         'interiors_text' => ['required', 'string', 'max:2000'],
         'landscape_text' => ['required', 'string', 'max:2000'],
@@ -249,7 +274,7 @@ Route::patch('/admin/news/{newsPost}', function (Request $request, NewsPost $new
     return redirect()->route('admin.dashboard')->with('status', 'News post updated.');
 })->middleware('auth')->name('admin.news.update');
 
-Route::post('/admin/projects', function (Request $request) {
+Route::post('/admin/projects', function (Request $request) use ($syncProjectCredits) {
     $validated = $request->validate([
         'title' => ['required', 'string', 'max:160'],
         'slug' => ['nullable', 'string', 'max:180', Rule::unique('projects', 'slug')],
@@ -271,6 +296,7 @@ Route::post('/admin/projects', function (Request $request) {
         'material_image_file' => ['nullable', 'image', 'max:8192'],
         'delivery_image' => ['nullable', 'string', 'max:500'],
         'delivery_image_file' => ['nullable', 'image', 'max:8192'],
+        'collaborators' => ['nullable', 'string', 'max:20000'],
     ]);
 
     $uploadedHero = wia_store_uploaded_image($request, 'hero_image_file');
@@ -298,12 +324,16 @@ Route::post('/admin/projects', function (Request $request) {
     $validated['featured'] = $request->boolean('featured');
     unset($validated['category'], $validated['typology_detail'], $validated['hero_image_file']);
 
-    Project::create($validated);
+    $collaborators = $validated['collaborators'] ?? '';
+    unset($validated['collaborators']);
+
+    $project = Project::create($validated);
+    $syncProjectCredits($project, $collaborators);
 
     return redirect()->route('admin.dashboard')->with('status', 'Project added.');
 })->middleware('auth')->name('admin.projects.store');
 
-Route::patch('/admin/projects/{project}', function (Request $request, Project $project) {
+Route::patch('/admin/projects/{project}', function (Request $request, Project $project) use ($syncProjectCredits) {
     $validated = $request->validate([
         'title' => ['required', 'string', 'max:160'],
         'slug' => ['nullable', 'string', 'max:180', Rule::unique('projects', 'slug')->ignore($project)],
@@ -325,6 +355,7 @@ Route::patch('/admin/projects/{project}', function (Request $request, Project $p
         'material_image_file' => ['nullable', 'image', 'max:8192'],
         'delivery_image' => ['nullable', 'string', 'max:500'],
         'delivery_image_file' => ['nullable', 'image', 'max:8192'],
+        'collaborators' => ['nullable', 'string', 'max:20000'],
     ]);
 
     $uploadedHero = wia_store_uploaded_image($request, 'hero_image_file');
@@ -343,7 +374,11 @@ Route::patch('/admin/projects/{project}', function (Request $request, Project $p
     $validated['featured'] = $request->boolean('featured');
     unset($validated['category'], $validated['typology_detail'], $validated['hero_image_file']);
 
+    $collaborators = $validated['collaborators'] ?? '';
+    unset($validated['collaborators']);
+
     $project->update($validated);
+    $syncProjectCredits($project, $collaborators);
 
     return redirect()->route('admin.dashboard')->with('status', 'Project updated.');
 })->middleware('auth')->name('admin.projects.update');

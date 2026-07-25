@@ -14,7 +14,7 @@
                     <h2>{{ $project->title }}</h2>
                     <p>{{ $project->location }}</p>
                 </div>
-                <img class="big-project-image" src="{{ wia_media_url($project->hero_image) }}" alt="{{ $project->title }}">
+                <img class="big-project-image" src="{{ wia_media_url($project->hero_image) }}" alt="{{ $project->title }}" width="1600" height="900">
             </a>
         @endforeach
     </div>

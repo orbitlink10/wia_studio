@@ -88,6 +88,12 @@
                 <label>Phone number<input name="phone_number" value="{{ old('phone_number', $studioProfile->phone_number) }}" placeholder="+254 ..." required></label>
             </div>
             <div class="admin-form-grid about-grid-admin">
+                <label>Footer email links<textarea name="footer_emails" rows="5" placeholder="Studio: studio@wia.com&#10;Careers: careers@wia.com">{{ old('footer_emails', $studioProfile->footer_emails) }}</textarea></label>
+                <label>Footer office / call links<textarea name="footer_offices" rows="5" placeholder="Nairobi: +254 716 097 766&#10;Office: +254 700 000 000">{{ old('footer_offices', $studioProfile->footer_offices) }}</textarea></label>
+                <label>Footer social links<textarea name="footer_socials" rows="5" placeholder="Instagram: https://instagram.com/...&#10;LinkedIn: https://linkedin.com/...">{{ old('footer_socials', $studioProfile->footer_socials) }}</textarea></label>
+                <label>Footer legal links<textarea name="footer_legal" rows="5" placeholder="Privacy&#10;Terms">{{ old('footer_legal', $studioProfile->footer_legal) }}</textarea></label>
+            </div>
+            <div class="admin-form-grid about-grid-admin">
                 <label>Architecture<textarea name="architecture_text" rows="3" required>{{ old('architecture_text', $studioProfile->architecture_text) }}</textarea></label>
                 <label>Interiors<textarea name="interiors_text" rows="3" required>{{ old('interiors_text', $studioProfile->interiors_text) }}</textarea></label>
                 <label>Landscape<textarea name="landscape_text" rows="3" required>{{ old('landscape_text', $studioProfile->landscape_text) }}</textarea></label>
@@ -216,6 +222,7 @@
                 <label>Or paste overview image URL<input name="overview_image" value="{{ old('overview_image') }}" placeholder="Optional; uses hero image if empty"></label>
             </div>
             <label>Summary<textarea name="summary" rows="4" required>{{ old('summary') }}</textarea></label>
+            <label>Architects / collaborators / credits<textarea name="collaborators" rows="8" placeholder="Architect: Name&#10;Collaborator: Name&#10;Partner in charge: Name&#10;Project manager: Name&#10;Project team: Name">{{ old('collaborators') }}</textarea></label>
             <div class="admin-form-grid chapter-grid">
                 <label>Spatial strategy image<input type="file" name="spatial_image_file" accept="image/*"></label>
                 <label>Material slide image<input type="file" name="material_image_file" accept="image/*"></label>
@@ -240,6 +247,7 @@
             @php
                 $currentCategory = old('category', $categoryFromTypology($project->typology));
                 $currentTypologyDetail = old('typology_detail', $typologyDetail($project->typology));
+                $currentCollaborators = old('collaborators', $project->credits->map(fn ($credit) => $credit->role.': '.$credit->name)->implode("\n"));
             @endphp
             <details class="admin-editor" @if ($loop->first) open @endif>
                 <summary>
@@ -254,7 +262,7 @@
                         <small>{{ $project->typology }}</small>
                     </div>
                     <a class="admin-project-preview-image" href="#add-plan-{{ $project->id }}" title="Add more photos and slides">
-                        <img src="{{ wia_media_url($project->hero_image) }}" alt="{{ $project->title }}">
+                        <img src="{{ wia_media_url($project->hero_image) }}" alt="{{ $project->title }}" width="1600" height="900">
                         <span>Add photos / slides</span>
                     </a>
                 </div>
@@ -287,6 +295,7 @@
                         <label>Overview slide image URL<input name="overview_image" value="{{ old('overview_image', $project->overview_image) }}" placeholder="Uses hero image if empty"></label>
                     </div>
                     <label>Summary<textarea name="summary" rows="4" required>{{ old('summary', $project->summary) }}</textarea></label>
+                    <label>Architects / collaborators / credits<textarea name="collaborators" rows="8" placeholder="Architect: Name&#10;Collaborator: Name&#10;Partner in charge: Name&#10;Project manager: Name&#10;Project team: Name">{{ $currentCollaborators }}</textarea></label>
                     <div class="admin-form-grid chapter-grid">
                         <label>Spatial strategy image<input type="file" name="spatial_image_file" accept="image/*"></label>
                         <label>Material slide image<input type="file" name="material_image_file" accept="image/*"></label>
@@ -324,7 +333,7 @@
 
                     <div class="admin-slide-strip" aria-label="{{ $project->title }} horizontal client slides">
                         <article class="admin-slide-panel admin-slide-hero">
-                            <img src="{{ wia_media_url($project->hero_image) }}" alt="{{ $project->title }}">
+                            <img src="{{ wia_media_url($project->hero_image) }}" alt="{{ $project->title }}" width="1600" height="900">
                             <span>Hero image</span>
                         </article>
                         <article class="admin-slide-panel admin-slide-copy">
@@ -333,7 +342,7 @@
                             <p>{{ $project->summary }}</p>
                         </article>
                         <article class="admin-slide-panel admin-slide-plan">
-                            <figure><img src="{{ wia_media_url($project->overview_image ?: $project->hero_image) }}" alt="{{ $project->title }} overview"></figure>
+                            <figure><img src="{{ wia_media_url($project->overview_image ?: $project->hero_image) }}" alt="{{ $project->title }} overview" width="1600" height="900"></figure>
                             <div>
                                 <span>Overview image</span>
                                 <h4>Client overview slide</h4>
@@ -342,7 +351,7 @@
                         </article>
                         @foreach ($project->chapters as $chapter)
                             <article class="admin-slide-panel admin-slide-plan">
-                                <figure><img src="{{ wia_media_url($chapter->image) }}" alt="{{ $chapter->label }}"></figure>
+                                <figure><img src="{{ wia_media_url($chapter->image) }}" alt="{{ $chapter->label }}" width="1600" height="900"></figure>
                                 <div>
                                     <span>{{ str_pad($chapter->position, 2, '0', STR_PAD_LEFT) }}</span>
                                     <h4>{{ $chapter->label }}</h4>
@@ -351,7 +360,7 @@
                             </article>
                         @endforeach
                         <article class="admin-slide-panel admin-slide-plan">
-                            <figure><img src="{{ wia_media_url($project->spatial_image ?: ($project->chapters->first()?->image ?: $project->hero_image)) }}" alt="{{ $project->title }} spatial strategy"></figure>
+                            <figure><img src="{{ wia_media_url($project->spatial_image ?: ($project->chapters->first()?->image ?: $project->hero_image)) }}" alt="{{ $project->title }} spatial strategy" width="1600" height="900"></figure>
                             <div>
                                 <span>Spatial strategy</span>
                                 <h4>Generated client slide</h4>
@@ -359,7 +368,7 @@
                             </div>
                         </article>
                         <article class="admin-slide-panel admin-slide-plan">
-                            <figure><img src="{{ wia_media_url($project->material_image ?: ($project->chapters->skip(1)->first()?->image ?: $project->hero_image)) }}" alt="{{ $project->title }} material and atmosphere"></figure>
+                            <figure><img src="{{ wia_media_url($project->material_image ?: ($project->chapters->skip(1)->first()?->image ?: $project->hero_image)) }}" alt="{{ $project->title }} material and atmosphere" width="1600" height="900"></figure>
                             <div>
                                 <span>Material</span>
                                 <h4>Generated client slide</h4>
@@ -367,12 +376,21 @@
                             </div>
                         </article>
                         <article class="admin-slide-panel admin-slide-plan">
-                            <figure><img src="{{ wia_media_url($project->delivery_image ?: ($project->chapters->skip(2)->first()?->image ?: $project->hero_image)) }}" alt="{{ $project->title }} delivery notes"></figure>
+                            <figure><iframe src="https://maps.google.com/maps?q={{ urlencode($project->location) }}&amp;z=12&amp;output=embed" title="{{ $project->title }} map" loading="lazy"></iframe></figure>
                             <div>
-                                <span>Delivery notes</span>
-                                <h4>Generated client slide</h4>
-                                <p>{{ $project->delivery_image ? 'Custom image uploaded.' : 'Using a project image fallback.' }}</p>
+                                <span>Location map</span>
+                                <h4>{{ $project->location }}</h4>
+                                <p>Interactive map panel generated from the project location.</p>
                             </div>
+                        </article>
+                        <article class="admin-slide-panel admin-slide-copy">
+                            <span>Collaborators</span>
+                            <h4>Project team</h4>
+                            @forelse ($project->credits as $credit)
+                                <p><strong>{{ $credit->role }}</strong> {{ $credit->name }}</p>
+                            @empty
+                                <p>Add collaborators in the project form to populate the final public panel.</p>
+                            @endforelse
                         </article>
                         <a class="admin-slide-panel admin-slide-empty" href="#add-plan-{{ $project->id }}">
                             <span>+</span>

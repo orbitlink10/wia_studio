@@ -76,23 +76,26 @@
             'body' => 'Images are optimized for fast loading while preserving the visual tone of the studio archive.',
             'image' => $project->material_image ?: ($project->chapters->skip(1)->first()?->image ?? $project->hero_image),
         ],
-        [
-            'type' => 'copy',
-            'eyebrow' => 'Delivery Notes',
-            'title' => 'Delivery Notes',
-            'body' => $project->status.' / '.$project->size.' m2 / ft2 / '.$project->typology,
-            'image' => $project->delivery_image ?: ($project->chapters->skip(2)->first()?->image ?? $project->hero_image),
-        ],
-        [
-            'type' => 'credits',
-            'eyebrow' => 'Credits',
-            'title' => 'Credits',
-            'body' => 'Project team and studio contact.',
-            'image' => $project->hero_image,
-        ],
     ]);
 
-    $slides = $slides->merge($supportSlides->take(max(0, 8 - $slides->count())))->take(10)->values();
+    $slides = $slides
+        ->merge($supportSlides->take(max(0, 8 - $slides->count())))
+        ->push([
+            'type' => 'map',
+            'eyebrow' => 'Location',
+            'title' => $project->location,
+            'body' => 'Map reference generated from the project location.',
+            'image' => $project->hero_image,
+        ])
+        ->push([
+            'type' => 'credits',
+            'eyebrow' => 'Collaborators',
+            'title' => 'Project Team',
+            'body' => 'Project team and studio contact.',
+            'image' => $project->hero_image,
+        ])
+        ->take(10)
+        ->values();
 @endphp
 
 <section class="big-subnav" aria-label="Project typologies">
@@ -140,8 +143,10 @@
                 @if (in_array($slide['type'], ['hero', 'media'], true))
                     <figure class="wide-media">
                         <img
-                            src="{{ $imageUrl($slide['image'], $loop->first ? 1800 : 1400) }}"
+                            src="{{ $imageUrl($slide['image'], 1600) }}"
                             alt="{{ $slide['title'] }}"
+                            width="1600"
+                            height="900"
                             loading="{{ $loop->first ? 'eager' : 'lazy' }}"
                             decoding="async"
                         >
@@ -164,6 +169,15 @@
                             <dt>URL</dt><dd>{{ route('projects.show', $project) }}</dd>
                         </dl>
                     </article>
+                @elseif ($slide['type'] === 'map')
+                    <figure class="wide-media wide-map">
+                        <iframe src="https://maps.google.com/maps?q={{ urlencode($project->location) }}&amp;z=12&amp;output=embed" title="{{ $project->title }} map" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
+                    </figure>
+                    <article class="wide-copy small">
+                        <span>{{ $slide['eyebrow'] }}</span>
+                        <h2>{{ $slide['title'] }}</h2>
+                        <p>{{ $slide['body'] }}</p>
+                    </article>
                 @elseif ($slide['type'] === 'credits')
                     <article class="wide-credits">
                         <span>{{ $slide['eyebrow'] }}</span>
@@ -176,8 +190,10 @@
                 @else
                     <figure class="wide-media">
                         <img
-                            src="{{ $imageUrl($slide['image'], 1400) }}"
+                            src="{{ $imageUrl($slide['image'], 1600) }}"
                             alt="{{ $slide['title'] }}"
+                            width="1600"
+                            height="900"
                             loading="lazy"
                             decoding="async"
                         >
@@ -201,7 +217,7 @@
                 <h2>{{ $item->title }}</h2>
                 <p>{{ $item->location }}</p>
             </div>
-            <img class="big-project-image" src="{{ wia_media_url($item->hero_image) }}" alt="{{ $item->title }}">
+            <img class="big-project-image" src="{{ wia_media_url($item->hero_image) }}" alt="{{ $item->title }}" width="1600" height="900">
         </a>
     @endforeach
 </section>
