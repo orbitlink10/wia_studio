@@ -5737,6 +5737,26 @@ body.pl-detail-active {
         text-align: left;
     }
 
+    .pl-detail-side h2,
+    .pl-detail-side > p,
+    .pl-detail-side dt,
+    .pl-detail-side dd,
+    .pl-detail-actions span {
+        font-size: 16px;
+        line-height: 1.25;
+    }
+
+    .pl-detail-side h2,
+    .pl-detail-side > p,
+    .pl-detail-side dd {
+        font-weight: 400;
+    }
+
+    .pl-detail-side dt,
+    .pl-detail-actions span {
+        font-weight: 700;
+    }
+
     .pl-detail-side dl {
         width: 100%;
         grid-template-columns: 1fr;
