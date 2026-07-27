@@ -5791,7 +5791,7 @@ body.pl-detail-active {
         min-width: 0;
         gap: 16px;
         height: auto;
-        min-height: 360px;
+        min-height: 520px;
         padding-inline: 14px;
     }
 
@@ -5800,15 +5800,15 @@ body.pl-detail-active {
     }
 
     .pl-detail-panel-hero {
-        --pl-detail-image-width: min(74vw, 360px);
-        --pl-detail-image-height: 360px;
+        --pl-detail-image-width: min(84vw, 430px);
+        --pl-detail-image-height: clamp(500px, 72svh, 620px);
         grid-template-columns: minmax(118px, 148px) var(--pl-detail-image-width) minmax(160px, 200px);
     }
 
     .pl-detail-story,
     .pl-detail-map-panel {
-        --pl-detail-image-width: min(74vw, 360px);
-        --pl-detail-image-height: 360px;
+        --pl-detail-image-width: min(84vw, 430px);
+        --pl-detail-image-height: clamp(500px, 72svh, 620px);
         grid-template-columns: minmax(160px, 210px) var(--pl-detail-image-width);
     }
 
