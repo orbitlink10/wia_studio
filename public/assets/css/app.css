@@ -1558,6 +1558,33 @@ textarea {
     display: none;
 }
 
+.project-back-link {
+    display: inline-flex;
+    align-items: center;
+    width: max-content;
+    min-height: 32px;
+    margin-bottom: 28px;
+    color: #111;
+    font-size: 10px;
+    font-weight: 500;
+    letter-spacing: 0.13em;
+    text-transform: uppercase;
+}
+
+.project-back-link::before {
+    content: "";
+    width: 18px;
+    height: 1px;
+    margin-right: 8px;
+    background: currentColor;
+}
+
+.project-return {
+    width: min(1080px, calc(100% - 40px));
+    margin: 0 auto;
+    padding: 24px 0 90px;
+}
+
 .wide-media {
     margin: 0;
     width: 100%;
@@ -5539,26 +5566,19 @@ body.pl-detail-active {
         width: 100vw;
         min-width: 0;
         min-height: calc(100svh - 56px);
-        display: flex;
-        align-items: center;
-        gap: 18px;
-        overflow-x: auto;
-        overflow-y: hidden;
-        padding: 22px 11vw 34px;
-        scroll-snap-type: x proximity;
-        scroll-padding-inline: 11vw;
-        overscroll-behavior-inline: contain;
-        -webkit-overflow-scrolling: touch;
+        display: grid;
+        gap: 0;
+        overflow: visible;
+        padding: 22px 20px 34px;
+        scroll-snap-type: none;
         scrollbar-width: none;
-        touch-action: pan-x;
+        touch-action: pan-y;
     }
 
     .pl.has-open-detail {
-        display: block;
-        overflow-x: hidden;
-        overflow-y: visible;
-        padding: 22px 20px 34px;
-        touch-action: pan-x pan-y;
+        display: grid;
+        overflow: visible;
+        touch-action: pan-y;
     }
 
     .pl::-webkit-scrollbar {
@@ -5568,11 +5588,11 @@ body.pl-detail-active {
     .pl-row {
         grid-template-columns: 1fr;
         gap: 14px;
-        flex: 0 0 78vw;
-        width: 78vw;
+        width: 100%;
         max-height: none;
-        padding: 0;
-        scroll-snap-align: center;
+        margin: 0 auto;
+        padding: 28px 0;
+        scroll-snap-align: none;
     }
 
     .pl-info {

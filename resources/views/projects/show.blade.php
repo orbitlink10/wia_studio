@@ -112,6 +112,7 @@
 
 <section class="big-project-wide project-slide-deck" aria-label="{{ $project->title }} slide deck">
     <aside class="big-project-sidebar">
+        <a class="project-back-link" href="{{ route('projects.index') }}">View Projects</a>
         <span class="big-project-icon"><img src="{{ asset('assets/img/wia-logo-white.svg') }}" alt=""></span>
         <h1>{{ $project->title }}</h1>
         <p class="project-place">{{ $project->location }}</p>
@@ -209,16 +210,7 @@
     </div>
 </section>
 
-<section class="big-next-list">
-    @foreach ($moreProjects as $item)
-        <a class="big-project-row" href="{{ route('projects.show', $item) }}">
-            <div class="big-project-info">
-                <span class="big-project-icon"><img src="{{ asset('assets/img/wia-logo-white.svg') }}" alt=""></span>
-                <h2>{{ $item->title }}</h2>
-                <p>{{ $item->location }}</p>
-            </div>
-            <img class="big-project-image" src="{{ wia_media_url($item->hero_image) }}" alt="{{ $item->title }}" width="1600" height="900">
-        </a>
-    @endforeach
+<section class="project-return">
+    <a class="project-back-link" href="{{ route('projects.index') }}">View Projects</a>
 </section>
 @endsection

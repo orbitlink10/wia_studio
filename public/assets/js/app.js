@@ -769,6 +769,7 @@ const openInlineProject = (row) => {
 
 document.querySelectorAll("[data-pl-expand]").forEach((row) => {
     row.addEventListener("click", (event) => {
+        if (row.dataset.plExpand !== "inline") return;
         event.preventDefault();
         openInlineProject(row);
     });
