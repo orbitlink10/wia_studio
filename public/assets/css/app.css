@@ -18,12 +18,12 @@
     --dark: #111411;
     --dark2: #171c18;
     --line: rgba(31, 33, 29, 0.14);
-    --font-everett: "TWK Everett", "Everett", "Avenir Next", Helvetica, Arial, sans-serif;
+    --font-everett: "TMK Everett", "TWK Everett", "Everett", sans-serif;
 }
 
 @font-face {
-    font-family: "TWK Everett";
-    src: local("TWK Everett"), local("Everett"), local("Everett Regular");
+    font-family: "TMK Everett";
+    src: local("TMK Everett"), local("TWK Everett"), local("Everett"), local("Everett Regular");
     font-weight: 300 800;
     font-style: normal;
     font-display: swap;
