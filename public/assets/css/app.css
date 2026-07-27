@@ -5617,12 +5617,13 @@ body.pl-detail-active {
     .pl-img {
         grid-column: 1;
         width: 100%;
+        aspect-ratio: 43 / 26;
         height: auto;
     }
 
     .pl-img img {
-        height: auto;
-        min-height: 0;
+        height: 100%;
+        min-height: 100%;
         aspect-ratio: auto;
         object-fit: cover;
     }
