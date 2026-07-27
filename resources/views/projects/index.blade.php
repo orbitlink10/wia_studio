@@ -60,6 +60,7 @@
         <a
             class="pl-row"
             href="{{ route('projects.show', $project) }}"
+            data-pl-expand="inline"
             data-project-url="{{ route('projects.show', $project) }}"
             data-category="{{ $category }}"
             data-sub="{{ $sub }}"
