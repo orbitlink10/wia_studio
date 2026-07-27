@@ -3345,10 +3345,24 @@ form button {
     }
 
     .big-project-sidebar {
+        position: static;
+        top: auto;
+        align-self: auto;
         width: 100%;
+        height: auto;
         min-height: 0;
         padding: 0 0 22px;
+        display: block;
+        text-align: left;
         border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+    }
+
+    .big-subnav {
+        position: static;
+        top: auto;
+        z-index: auto;
+        overflow-x: auto;
+        justify-content: flex-start;
     }
 
     .big-project-sidebar .project-place {
@@ -3391,6 +3405,7 @@ form button {
     .project-slide-credits {
         width: 100%;
         min-width: 0;
+        min-height: 0;
         height: auto;
         display: grid;
         grid-template-columns: 1fr;
@@ -3409,6 +3424,34 @@ form button {
     .wide-copy.small,
     .wide-credits {
         width: 100%;
+    }
+
+    .wide-copy p,
+    .wide-copy.small p {
+        font-size: 16px;
+        line-height: 1.38;
+    }
+
+    .wide-copy h2,
+    .wide-credits h2 {
+        font-size: 24px;
+        line-height: 1.14;
+    }
+
+    .project-facts-slide dl,
+    dl.project-facts-slide {
+        grid-template-columns: 1fr;
+        gap: 6px;
+    }
+
+    .project-facts-slide dt,
+    dl.project-facts-slide dt {
+        margin-top: 10px;
+    }
+
+    .wide-credits p {
+        grid-template-columns: 1fr;
+        gap: 4px;
     }
 
     .project-horizontal-page {
@@ -5547,6 +5590,21 @@ body.pl-detail-active {
 }
 
 @media (max-width: 600px) {
+    .big-project-detail-page .big-header {
+        position: static;
+    }
+
+    .big-project-detail-page .big-subnav {
+        position: static;
+        top: auto;
+        height: auto;
+        padding: 12px 20px;
+    }
+
+    .big-project-detail-page .big-project-wide {
+        padding-top: 18px;
+    }
+
     .wia-splash {
         --wia-intro-x: 20px;
         --wia-intro-y: 26px;
